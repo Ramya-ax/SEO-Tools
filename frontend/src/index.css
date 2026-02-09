@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* PDF Generation Mode - Forces safe colors (Hex/RGB) to avoid oklch errors */
+/* This is a nuclear option to ensure html2canvas never sees a modern color function */
+
+.pdf-mode {
+  --pdf-black: #111111;
+  --pdf-white: #ffffff;
+  --pdf-gray: #e5e7eb;
+  --pdf-border: #d1d5db;
+
+  color: var(--pdf-black) !important;
+  background-color: var(--pdf-white) !important;
+  border-color: var(--pdf-border) !important;
+}
+
+/* Override ALL elements within the report */
+.pdf-mode *,
+.pdf-mode *::before,
+.pdf-mode *::after {
+  color: var(--pdf-black) !important;
+  border-color: var(--pdf-border) !important;
+  outline-color: var(--pdf-border) !important;
+  text-decoration-color: var(--pdf-black) !important;
+  column-rule-color: var(--pdf-border) !important;
+  caret-color: var(--pdf-black) !important;
+
+  /* Kill complex effects that might use colors */
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+
+  /* Kill gradients */
+  background-image: none !important;
+}
+
+/* Re-apply white backgrounds to containers that need it (Cards, etc.) */
+.pdf-mode .bg-white,
+.pdf-mode .bg-gray-50,
+.pdf-mode .bg-blue-50,
+.pdf-mode .bg-indigo-50,
+.pdf-mode .bg-orange-50,
+.pdf-mode .bg-yellow-50 {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Headers */
+.pdf-mode h1,
+.pdf-mode h2,
+.pdf-mode h3,
+.pdf-mode h4,
+.pdf-mode h5,
+.pdf-mode h6 {
+  color: #000000 !important;
+}
+
+/* Specific Component Overrides - using extremely simple hex colors */
+
+/* Header Bar */
+.pdf-mode .bg-indigo-900 {
+  background-color: #1e1b4b !important;
+  /* deeply dark blue */
+  color: #ffffff !important;
+}
+
+.pdf-mode .bg-indigo-900 * {
+  color: #ffffff !important;
+  border-color: #4338ca !important;
+}
+
+/* Badges */
+.pdf-mode .bg-indigo-800 {
+  background-color: #3730a3 !important;
+  color: #ffffff !important;
+}
+
+/* Status Colors (Red/Green/Yellow/Orange) - Force simplified hex */
+.pdf-mode .text-red-700,
+.pdf-mode .text-red-600 {
+  color: #b91c1c !important;
+}
+
+.pdf-mode .bg-red-100 {
+  background-color: #fee2e2 !important;
+}
+
+.pdf-mode .text-yellow-700,
+.pdf-mode .text-yellow-600,
+.pdf-mode .text-yellow-800 {
+  color: #a16207 !important;
+}
+
+.pdf-mode .bg-yellow-100 {
+  background-color: #fef9c3 !important;
+}
+
+.pdf-mode .text-green-700,
+.pdf-mode .text-green-600,
+.pdf-mode .text-green-500 {
+  color: #15803d !important;
+}
+
+.pdf-mode .bg-green-100 {
+  background-color: #dcfce7 !important;
+}
+
+.pdf-mode .text-orange-700,
+.pdf-mode .text-orange-500 {
+  color: #c2410c !important;
+}
+
+.pdf-mode .bg-orange-100 {
+  background-color: #ffedd5 !important;
+}
+
+.pdf-mode .text-indigo-600 {
+  color: #4f46e5 !important;
+}
+
+.pdf-mode .text-blue-600 {
+  color: #2563eb !important;
+}
+
+.pdf-mode .bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+
+/* Gray Text */
+.pdf-mode .text-gray-500,
+.pdf-mode .text-gray-600,
+.pdf-mode .text-gray-700 {
+  color: #374151 !important;
+}
+
+.pdf-mode .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+/* Icons */
+.pdf-mode svg {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Tables */
+.pdf-mode tr:hover {
+  background-color: transparent !important;
+  /* Remove hover effects in PDF */
+}
+
+.pdf-mode thead tr {
+  border-bottom: 2px solid #000000 !important;
+}

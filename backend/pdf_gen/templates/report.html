@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SEO Report</title>
+</head>
+<body>
+
+<h1 class="report-title">SEO REPORT</h1>
+
+<!-- GOAL ALWAYS AT TOP -->
+<h2 class="main-heading">Goal</h2>
+<p class="text">{{ goal }}</p>
+
+{% macro render(value, level=1) %}
+    {% if value is mapping %}
+        {% for key, val in value.items() %}
+            <div class="block level-{{ level }}">
+                
+                {% if level == 1 %}
+                    <h2 class="main-heading">{{ key.replace("_", " ") }}</h2>
+                {% else %}
+                    <h3 class="sub-heading">{{ key.replace("_", " ") }}</h3>
+                {% endif %}
+
+                {{ render(val, level + 1) }}
+
+            </div>
+        {% endfor %}
+
+    {% elif value is iterable and value is not string %}
+        <ul class="list level-{{ level }}">
+        {% for item in value %}
+            <li>
+                {{ render(item, level + 1) }}
+            </li>
+        {% endfor %}
+        </ul>
+
+    {% else %}
+        <p class="text">{{ value }}</p>
+    {% endif %}
+{% endmacro %}
+
+<!-- RENDER EVERYTHING ELSE -->
+{{ render(data) }}
+
+</body>
+</html>

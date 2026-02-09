@@ -1,0 +1,91 @@
+body {
+    font-family: "Times New Roman", serif;
+    font-size: 13.5px;
+    /* ⬆ base text (was 12px) */
+    line-height: 1.7;
+    /* more breathing room */
+    color: #000;
+}
+
+/* Report title */
+.report-title {
+    text-align: center;
+    font-size: 22px;
+    /* ⬆ was 20px */
+    margin-bottom: 34px;
+    letter-spacing: 0.6px;
+}
+
+/* MAIN HEADINGS (Goal, Competitors, Strategy, etc.) */
+.main-heading {
+    font-size: 17px;
+    /* ⬆ was 15px */
+    font-weight: bold;
+    margin-top: 32px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #000;
+    text-transform: capitalize;
+}
+
+/* SUB HEADINGS (Content, Trust, Step 1, etc.) */
+.sub-heading {
+    font-size: 14.5px;
+    /* ⬆ was 13px */
+    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    text-decoration: underline;
+    text-transform: capitalize;
+}
+
+/* Paragraph text */
+.text {
+    margin: 6px 0 12px 0;
+    text-align: justify;
+}
+
+/* Lists */
+.list {
+    padding-left: 20px;
+    /* slight increase */
+    margin-bottom: 15px;
+}
+
+.list li {
+    margin-bottom: 8px;
+}
+
+/* Blocks */
+.block {
+    margin-bottom: 25px;
+    page-break-inside: avoid;
+    /* Prevent blocks from splitting awkwardly */
+}
+
+/* Ensure content doesn't overflow horizontally */
+img,
+table {
+    max-width: 100%;
+}
+
+/* Indentation by depth */
+.level-1 {
+    margin-left: 0px;
+}
+
+.level-2 {
+    margin-left: 12px;
+}
+
+.level-3 {
+    margin-left: 24px;
+}
+
+.level-4 {
+    margin-left: 36px;
+}
+
+.level-5 {
+    margin-left: 48px;
+}
