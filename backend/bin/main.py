@@ -25,6 +25,10 @@ logger=logging()
 Gen_client = genai.Client(api_key=os.getenv("GEMINI_APIKEY"))
 client = RestClient(os.getenv("DATAFORSEO_USERNAME"), os.getenv("DATAFORSEO_PASSWORD"))
 
+class LoginData(BaseModel):
+    UserName:str
+    Password:str
+
 class Keyword_Sitemap(BaseModel):
     Keyword:str
 
@@ -357,9 +361,9 @@ async def overall_strategy(user:Overall_Strategy):
     Domain_Name=get_domain(user.Domain_URL)
     Competetior_DomainName=[]
     for idx,items in enumerate(user.Competetior_Name):
-        print(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
+        logger.info(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
         Competetior_DomainName.append(get_domain(items))
-    print("Preforming Web Scraping Analyisis for Domain Page")
+    logger.info("Preforming Web Scraping Analyisis for Domain Page \n")
     Page_Analysis=Domain_Page_Analysis(user.Domain_URL,user.Competetior_Name,flag=1)
     
     # Extract competitor data
@@ -368,8 +372,8 @@ async def overall_strategy(user:Overall_Strategy):
     # (Optional, but keeps things clean if Page_Analysis is just meant for the domain page)
     # Page_Analysis.pop("competitor_data", None) 
 
-    print(f"This is Result from Page Analyisi:{Page_Analysis}\n")
-    print("Now getting the Overall Keyword Info for the given keywords over there\n")
+    logger.info(f"This is Result from Page Analyisi:{Page_Analysis}\n")
+    logger.info("Now getting the Overall Keyword Info for the given keywords over there\n")
     Links_IN_Website=get_sitemap_links(user.Domain_URL)
      
     Keyword_info=Keyword_Overview(user.Important_Keywords)
@@ -491,7 +495,8 @@ Format:
 
 2) Competitor List (RAW)
 Output key: "competetior"
-Return {user.Competetior_Name} EXACTLY.
+Return {user.Competetior_Name} EXACTLY. 
+Rank the competitor according the competion level with our domain and give in an order 
 
 3) Competitor Analysis (scraped)
 Output key: "competetior_Analyisis"
@@ -680,7 +685,7 @@ Output enforcement:
 Step 4: Trust & EEAT Reinforcement (Proof blocks)
 What this step MUST do:
 - Add credibility signals that reduce hesitation and improve conversion readiness.
-Required checks:
+Required checks: 
 - Missing proof: awards, certifications, testimonials, stats
 - Missing schema for entity (Organization/LocalBusiness/EducationalOrganization etc.)
 - Vague claims without proof
@@ -838,14 +843,14 @@ NO EXTRA TEXT
     )
     extracted = response.candidates[0].content.parts[0].text
     report = json.loads(extracted)
-    print("Report:", report)
+    logger.info("Report from the Overall stragery", report,"\n")
     return report
 
 @app.post("/Shared_Missing_Keywords")
 async def Shared_And_Missing_Keywords(user: Shared_Missing_Keywords):
-    from client import RestClient
     
-    print("\n Inside shared and missing keyword")
+    
+    logger.info("\n Inside shared and missing keyword")
 
     
     Domain = get_domain(user.Domain_URL)
@@ -881,7 +886,7 @@ async def Shared_And_Missing_Keywords(user: Shared_Missing_Keywords):
 
     try:
         for idx, Com_domains in enumerate(Competetior):
-            print(f"Processing {idx+1}/{len(Competetior)}: {Com_domains}\n")
+            logger.info(f"Processing {idx+1}/{len(Competetior)}: {Com_domains}\n")
 
             post_data = {
                 0: {
@@ -986,27 +991,30 @@ async def Shared_And_Missing_Keywords(user: Shared_Missing_Keywords):
         }
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        logger.info(f"Error: {str(e)} \n")
         return {"Error": True, "Reason": str(e)}
+
 @app.post("/Page")
 async def Page(user:Page_A): 
-    print("\n Now Processing Page Analyisis")
+    logger.info("\n Now Processing Page Analyisis")
     Anlayisis=Domain_Page_Analysis(user.Domain_Url,user.Comp_Url)
 
     return {"Page":Anlayisis['page_Analysis']}
+
 @app.post("/Product")   
 async def Product_Page_analyisis(user:Product_Anlayisis):
     """
     It is used to main product page analyisis
     """
+    logger.info("\n Now Processing the Product Page")
     location="India"
     competetiors=[]
     for idx,items in enumerate(user.Competetior_Name):
-        print(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
+        logger.info(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
         competetiors.append(get_domain(items))
 
     web_scraped_data_json=scrape_page(user.Product_Page_URL)
-    print("This is web_scraped_data_json",web_scraped_data_json)
+    logger.info("\n This is web_scraped_data_json",web_scraped_data_json)
     Domain_Name=get_domain(user.Product_Page_URL)
     Page_Analysis=Domain_Page_Analysis(user.Product_Page_URL,user.Competetior_Name)
     page_analysis_json=Page_Analysis['page_Analysis']
@@ -1016,7 +1024,7 @@ async def Product_Page_analyisis(user:Product_Anlayisis):
     product=user.Products_Name
     comp_url=user.Competetior_Name
     for idx,items in enumerate(user.Competetior_Name):
-        print(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
+        logger.info(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
         competetiors.append(get_domain(items))
     current_state_of_seo=user.Prevoivs_Strategy_Used   
     Links_IN_Website=get_sitemap_links(user.Domain_Page) 
@@ -1223,6 +1231,9 @@ Format:
 3) Competitor List (RAW)
 Output key: "competetior"
 Return {competetiors} EXACTLY.
+Rank the competitor according the competion level with our domain and give in an order 
+
+
 
 4) Competitor Analysis (Scraped)
 Output key: "competetior_Analyisis"
@@ -1342,11 +1353,11 @@ NO extra text
 async def Month_Wise_Plan(user:Month_Wise_Planer):
 
 
-    print("\n We are in Month Wise Plan")
+    logger.info("\n We are in Month Wise Plan")
     links_in_website=get_sitemap_links(user.Domain_Page)
     competetiors=[]
     for idx,items in enumerate(user.Competetior_Name):
-        print(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
+        logger.info(f"Now Processing the Competetior {idx+1}:{items} for getting domain name from the url\n")
         competetiors.append(get_domain(items))
     web_scraped_data_json=scrape_page(user.Page_URL)
     Domain_Name=get_domain(user.Page_URL)
@@ -1584,6 +1595,8 @@ Output format STRICT:
 
 2) COMPETITOR LIST — RAW (NO MODIFICATION): {competetiors}
 Return competitor list EXACTLY as provided.
+Rank the competitor according the competion level with our domain and give in an order 
+
 
 Output key:
 "competetior"
@@ -1766,56 +1779,80 @@ FINAL VALIDATION RULE:
 
     print(response.text)
     responseg=json.loads(response.text)
+    logger.info("\n Now The Respsone from the Month Wise Plan",responseg)
     return {"Report":responseg}
 
 @app.post("/Keyword")
 async def Keyword_Reserach(user:Keywords_Research):
     
-    print("\n In the Keyword Reserch \n ")
+    logger.info("\n In the Keyword Reserch \n ")
     Result=[]
     for idx, items in enumerate(user.Keywords):
-        print(f"\n Now Processinf {idx+1} Keyword:{items} \n ")
-        print("Now in the People Also Ask\n")
+        logger.info(f"\n Now Processinf {idx+1} Keyword:{items} \n ")
+        logger.info("Now in the People Also Ask\n")
         People_Also_Ask_for=People_Also_Ask_for_Keywords(items)
-        print("Now in the Long tail Keyword \n ")
+        logger.info("Now in the Long tail Keyword \n ")
         Long_tail_Keyword=Long_tail_keywords(items)
         Result.append({"Keyword":items,"People_Also_Ask_For":People_Also_Ask_for,"Long_tail_Keyword":Long_tail_Keyword})
     All_Related_keywords=related_keywords(user.Keywords)  
 
   
     Respone={"Related_Keywords":All_Related_keywords,"Each_keyword_info":Result}
+    logger.info("\n Now the Respone fron the Keyword Reserach",Respone)
     return Respone
 
 @app.post("/Keyword_Pie")
 async def Keyword_pie(user:keyword_pie):
-    print("\n Now Processing Keyword Pie")
+    logger.info("\n Now Processing Keyword Pie")
     Respone=serach_engine(user.Keyword)
     Shopping=Serach_Shopping(user.Keyword)
     AI=AI_MODE(user.Keyword)
 
-    print("\n Now Processing Related Question")
-    print(Respone)
-    print("\n Now Processing Related Searchs")
-    print(Shopping)
-    print("\n Now Processing AI Mode")
-    print(AI)
+    logger.info("\n Now Processing Related Question")
+    logger.info(Respone)
+    logger.info("\n Now Processing Related Searchs")
+    logger.info(Shopping)
+    logger.info("\n Now Processing AI Mode")
+    logger.info(AI)
 
     return {"Related_Question":Respone['Related_Question'],"Related_Searchs":Respone['Related_Searchs'],"Shopping":Shopping,"AIMODE":AI}
 
 @app.post("/Page")
 async def Page(user:Page_A): 
-    print("\n Now Processing Page Analyisis")
+    logger.info("\n Now Processing Page Analyisis")
     Anlayisis=Domain_Page_Analysis(user.Domain_Url,user.Comp_Url)
+    logger.info("\n Now The Result of",{Anlayisis})
 
     return {"Page":Anlayisis['page_Analysis']}      
     
-
 @app.post("/Keyword_sitemap")
 async def Keyword_site(user:Keyword_Sitemap):
-    print("\n Now processing the Keyword Sitemap")
+    logger.info("\n Now processing the Keyword Sitemap")
     Response=People_Also_Ask_for_Keywords(user.Keyword)
+    logger.info("\n The respsone from the Keyword Sitemap",Response)
     
     return {"Keyword_Sitemap":Response}
+
+@app.post("/Login")
+async def Login(user:LoginData):
+    logger.info("In The Login modulde \n")
+    logger.info(" the username",user.UserName,"the password",user.Password)
+    if user.UserName=="marketing@bdcode.in":
+        Username=True
+    else:
+        Username=False
+    if user.Password=="Hugjapan@747":
+        password=True
+    else: 
+        password=False
+
+    if Username and password:
+        return {"Status":True}
+    elif Username and not password:
+        return {"Status":False,"Message":"Incorrect Password"}
+    else:
+        return{"Status":False,"Message":"Incorrect Username"}       
+
 
 
     
