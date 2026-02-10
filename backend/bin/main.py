@@ -1835,7 +1835,7 @@ async def Keyword_site(user:Keyword_Sitemap):
 
 @app.post("/Login")
 async def Login(user:LoginData):
-    logger.info("In The Login modulde \n")
+    logger.info("In The Login part modulde \n")
     logger.info(" the username",user.UserName,"the password",user.Password)
     if user.UserName=="marketing@bdcode.in":
         Username=True
