@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { ActionButton } from '../components/ui/ActionButton';
 import { ProductAnalysisReportWeb } from '../components/web/ProductAnalysisReportWeb';
 import type { ProductAnalysisResponse } from '../types/index';
@@ -53,18 +53,7 @@ export const ProductAnalysisReport: React.FC = () => {
         );
     }
 
-    const handleDownloadJSON = () => {
-        const jsonString = JSON.stringify(reportData, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = href;
-        link.download = `product-analysis-report-${new Date().getTime()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
-    };
+
 
     return (
         <div className="space-y-8">
@@ -78,11 +67,6 @@ export const ProductAnalysisReport: React.FC = () => {
                     Back to Form
                 </button>
                 <div className="flex gap-3">
-                    <ActionButton onClick={handleDownloadJSON} variant="outline" className="py-2.5 px-4 h-10">
-                        <FileText className="w-4 h-4 mr-2" />
-                        Download JSON
-                    </ActionButton>
-
 
                 </div>
             </div>

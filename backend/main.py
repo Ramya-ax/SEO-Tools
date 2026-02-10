@@ -1797,6 +1797,13 @@ async def Keyword_pie(user:keyword_pie):
     Shopping=Serach_Shopping(user.Keyword)
     AI=AI_MODE(user.Keyword)
 
+    print("\n Now Processing Related Question")
+    print(Respone)
+    print("\n Now Processing Related Searchs")
+    print(Shopping)
+    print("\n Now Processing AI Mode")
+    print(AI)
+
     return {"Related_Question":Respone['Related_Question'],"Related_Searchs":Respone['Related_Searchs'],"Shopping":Shopping,"AIMODE":AI}
 
 @app.post("/Page")
@@ -1811,6 +1818,7 @@ async def Page(user:Page_A):
 async def Keyword_site(user:Keyword_Sitemap):
     print("\n Now processing the Keyword Sitemap")
     Response=People_Also_Ask_for_Keywords(user.Keyword)
+    
     return {"Keyword_Sitemap":Response}
 
 

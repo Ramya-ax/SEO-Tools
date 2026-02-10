@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileJson, ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { ActionButton } from '../components/ui/ActionButton';
 import { OverallStrategyReportWeb } from '../components/web/OverallStrategyReportWeb';
 import type { OverallStrategyResponse } from '../types/index';
@@ -54,18 +54,7 @@ export const OverallStrategyReport: React.FC = () => {
         );
     }
 
-    const handleDownloadJSON = () => {
-        const jsonContent = JSON.stringify(reportData, null, 2);
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = `overall-strategy-report-${new Date().getTime()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
-    };
+
 
     return (
         <div className="space-y-8">
@@ -85,12 +74,7 @@ export const OverallStrategyReport: React.FC = () => {
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Form
                 </button>
-                <div className="flex gap-3">
-                    <ActionButton onClick={handleDownloadJSON} variant="outline" className="py-2.5 px-4 h-10">
-                        <FileJson className="w-4 h-4 mr-2" />
-                        Download JSON
-                    </ActionButton>
-                </div>
+
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[700px]">

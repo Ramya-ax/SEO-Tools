@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, FileJson } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import MonthWisePlanReportWeb from '../components/web/MonthWisePlanReportWeb';
 import type { MonthWisePlanResponse } from '../types';
 import { ActionButton } from '../components/ui/ActionButton';
@@ -50,18 +50,7 @@ const MonthWisePlanReport = () => {
         );
     }
 
-    const handleDownloadJSON = () => {
-        const jsonString = JSON.stringify(reportData, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = href;
-        link.download = `month-wise-plan-${new Date().getTime()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(href);
-    };
+
 
     return (
         <div className="space-y-8">
@@ -75,16 +64,11 @@ const MonthWisePlanReport = () => {
                     Back to Form
                 </button>
 
-                <div className="flex items-center gap-3">
-                    <ActionButton onClick={handleDownloadJSON} variant="outline" className="py-2.5 px-4 h-10">
-                        <FileJson className="w-4 h-4 mr-2" />
-                        Download JSON
-                    </ActionButton>
-                </div>
+
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px]">
-                <MonthWisePlanReportWeb data={reportData} />
+                <MonthWisePlanReportWeb data={reportData} generatedAt={new Date().toISOString()} />
             </div>
         </div>
     );

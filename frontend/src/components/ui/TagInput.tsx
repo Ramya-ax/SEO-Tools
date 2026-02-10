@@ -77,7 +77,7 @@ export const TagInput: React.FC<TagInputProps> = ({
                 {value.map((tag, index) => (
                     <span
                         key={index}
-                        className="flex items-center gap-1 px-2 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100"
+                        className="flex items-center gap-1 px-2 py-1 text-sm bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100 break-all max-w-full"
                     >
                         {tag}
                         <button

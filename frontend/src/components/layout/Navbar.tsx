@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart3, LayoutDashboard, Settings } from 'lucide-react';
+import { BarChart3, LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
@@ -38,15 +38,7 @@ export const Navbar: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full border border-green-200 text-xs font-semibold">
-                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                            System Operational
-                        </div>
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors p-2">
-                            <Settings size={20} />
-                        </button>
-                    </div>
+
                 </div>
             </div>
         </nav>

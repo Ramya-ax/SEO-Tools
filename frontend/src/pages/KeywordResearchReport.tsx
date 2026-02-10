@@ -33,109 +33,124 @@ const KeywordResearchReport: React.FC = () => {
     const { Related_Keywords, Each_keyword_info } = reportData;
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 border-b border-gray-200">
+        <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            {/* Navigation and Actions - Outside the card */}
+            <div className="flex justify-between items-center">
                 <button
                     onClick={() => navigate('/keyword-research')}
-                    className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+                    className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors font-medium"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Research
                 </button>
-                <div className="text-sm text-gray-500">
-                    Analysis generated on {new Date().toLocaleDateString()}
-                </div>
             </div>
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Keyword Research Report</h1>
-                <p className="text-gray-600">
-                    Comprehensive analysis including related keywords, "People Also Ask" questions, and long-tail variations.
-                </p>
-            </div>
-
-            {/* Related Keywords Section */}
-            <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
-                    <h2 className="text-lg font-bold text-blue-900 flex items-center gap-2">
-                        <Search className="w-5 h-5 text-blue-600" />
-                        Related Keywords Overview
-                    </h2>
-                </div>
-                <div className="overflow-x-auto max-h-[400px]">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
-                            <tr>
-                                <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Keyword</th>
-                                <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Volume</th>
-                                <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Difficulty</th>
-                                <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Intent</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 text-sm">
-                            {Related_Keywords.map((kw, i) => (
-                                <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                    <td className="py-3 px-6 font-medium text-gray-900">{kw.Keyword}</td>
-                                    <td className="py-3 px-6 text-gray-600">{kw.Search_Volume?.toLocaleString() ?? '-'}</td>
-                                    <td className="py-3 px-6">
-                                        {kw.keyword_difficulty !== null ? (
-                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${kw.keyword_difficulty > 70 ? 'bg-red-100 text-red-700' :
-                                                kw.keyword_difficulty > 40 ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-green-100 text-green-700'
-                                                }`}>
-                                                {kw.keyword_difficulty}
-                                            </span>
-                                        ) : '-'}
-                                    </td>
-                                    <td className="py-3 px-6">
-                                        {kw.Intent ? (
-                                            <span className="capitalize px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                                                {kw.Intent}
-                                            </span>
-                                        ) : '-'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            {/* Detailed Analysis Section (Tabs) */}
-            <section>
-                <div className="flex items-center mb-6">
-                    <div className="w-1.5 h-8 bg-indigo-500 rounded-full mr-3"></div>
-                    <h2 className="text-2xl font-bold text-gray-900">Deep Dive Analysis</h2>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                    {Each_keyword_info.map((info, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setActiveKeyword(info.Keyword)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${activeKeyword === info.Keyword
-                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
-                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                                }`}
-                        >
-                            {info.Keyword}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content Area */}
-                {activeKeyword && (
-                    <div className="space-y-8 animate-in fade-in duration-300">
-                        {(() => {
-                            const activeInfo = Each_keyword_info.find(k => k.Keyword === activeKeyword);
-                            if (!activeInfo) return null;
-                            return <KeywordDetails info={activeInfo} />;
-                        })()}
+            {/* Main Report Card */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden font-sans">
+                {/* Blue Gradient Header */}
+                <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-10 print:bg-indigo-900 print:text-white">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-2">Keyword Research Report</h1>
+                            <p className="text-indigo-200">Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+                        </div>
                     </div>
-                )}
-            </section>
+                    <p className="text-indigo-100 mt-4 max-w-3xl text-lg opacity-90">
+                        Comprehensive analysis including related keywords, "People Also Ask" questions, and long-tail variations.
+                    </p>
+                </div>
+
+                {/* Report Content */}
+                <div className="p-10 space-y-12">
+
+                    {/* Related Keywords Section */}
+                    <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
+                            <h2 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+                                <Search className="w-5 h-5 text-blue-600" />
+                                Related Keywords Overview
+                            </h2>
+                        </div>
+                        <div className="overflow-x-auto max-h-[400px]">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Keyword</th>
+                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Volume</th>
+                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Difficulty</th>
+                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Intent</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 text-sm">
+                                    {Related_Keywords.map((kw, i) => (
+                                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                            <td className="py-3 px-6 font-medium text-gray-900">{kw.Keyword}</td>
+                                            <td className="py-3 px-6 text-gray-600">{kw.Search_Volume?.toLocaleString() ?? '-'}</td>
+                                            <td className="py-3 px-6">
+                                                {kw.keyword_difficulty !== null ? (
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${kw.keyword_difficulty > 70 ? 'bg-red-100 text-red-700' :
+                                                        kw.keyword_difficulty > 40 ? 'bg-orange-100 text-orange-700' :
+                                                            'bg-green-100 text-green-700'
+                                                        }`}>
+                                                        {kw.keyword_difficulty}
+                                                    </span>
+                                                ) : '-'}
+                                            </td>
+                                            <td className="py-3 px-6">
+                                                {kw.Intent ? (
+                                                    <span className="capitalize px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                                                        {kw.Intent}
+                                                    </span>
+                                                ) : '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    {/* Detailed Analysis Section (Tabs) */}
+                    <section>
+                        <div className="flex items-center mb-6">
+                            <div className="w-1.5 h-8 bg-indigo-500 rounded-full mr-3"></div>
+                            <h2 className="text-2xl font-bold text-gray-900">Deep Dive Analysis</h2>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {Each_keyword_info.map((info, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setActiveKeyword(info.Keyword)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${activeKeyword === info.Keyword
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                        }`}
+                                >
+                                    {info.Keyword}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Content Area */}
+                        {activeKeyword && (
+                            <div className="space-y-8 animate-in fade-in duration-300">
+                                {(() => {
+                                    const activeInfo = Each_keyword_info.find(k => k.Keyword === activeKeyword);
+                                    if (!activeInfo) return null;
+                                    return <KeywordDetails info={activeInfo} />;
+                                })()}
+                            </div>
+                        )}
+                    </section>
+                </div>
+
+                {/* Footer */}
+                <div className="bg-gray-50 border-t border-gray-100 p-6 text-center text-gray-500 text-sm">
+                    END OF REPORT
+                </div>
+            </div>
         </div>
     );
 };

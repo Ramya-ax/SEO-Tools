@@ -150,39 +150,55 @@ export const SharedMissingKeywordsReport: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-gray-200">
+        <div className="space-y-6">
+            {/* Navigation and Actions - Outside the card */}
+            <div className="flex justify-between items-center">
                 <button
                     onClick={() => navigate('/shared-missing-keywords')}
-                    className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+                    className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors font-medium"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Form
                 </button>
-                <div className="text-sm text-gray-500 mt-2 md:mt-0">
-                    Analysis generated on {new Date().toLocaleDateString()}
+            </div>
+
+            {/* Main Report Card */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden font-sans">
+                {/* Blue Gradient Header */}
+                <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-10 print:bg-indigo-900 print:text-white">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-2">Keyword Gap Analysis</h1>
+                            <p className="text-indigo-200">Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+                        </div>
+                    </div>
+                    <p className="text-indigo-100 mt-4 max-w-3xl text-lg opacity-90">
+                        Comparison results for your domain vs. competitors. Identify shared opportunities and missing keyword gaps.
+                    </p>
+                </div>
+
+                {/* Report Content */}
+                <div className="p-10 space-y-12">
+                    <KeywordTable
+                        title="Shared Keywords"
+                        description="Keywords present in both domains."
+                        data={shared_count || []}
+                        onDownloadCSV={handleDownloadSharedCSV}
+                    />
+
+                    <KeywordTable
+                        title="Missing Keywords"
+                        description="Keywords your competitors rank for, but you do not."
+                        data={missing_count || []}
+                        onDownloadCSV={handleDownloadMissingCSV}
+                    />
+                </div>
+
+                {/* Footer */}
+                <div className="bg-gray-50 border-t border-gray-100 p-6 text-center text-gray-500 text-sm">
+                    END OF REPORT
                 </div>
             </div>
-
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Keyword Gap Analysis</h1>
-                <p className="text-gray-600">Comparison results for your domain vs. competitors.</p>
-            </div>
-
-            <KeywordTable
-                title="Shared Keywords"
-                description="Keywords present in both domains."
-                data={shared_count || []}
-                onDownloadCSV={handleDownloadSharedCSV}
-            />
-
-            <KeywordTable
-                title="Missing Keywords"
-                description="Keywords your competitors rank for, but you do not."
-                data={missing_count || []}
-                onDownloadCSV={handleDownloadMissingCSV}
-            />
         </div>
     );
 };
