@@ -16,6 +16,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from logs.log import logging
+logger=logging()
+
 client = RestClient(os.getenv("DATAFORSEO_USERNAME"), os.getenv("DATAFORSEO_PASSWOR"))
 Gen_client = genai.Client(api_key=os.getenv("GEMINI_APIKEY"))
 visited_sitemaps=set()    
@@ -54,6 +57,7 @@ class  Domain_Ranking_Report(BaseModel):
    Report:str   
 
 def get_sitemap_links(sitemap_url: str, visited=None) -> list:
+    logger.info("\n in the Sitemap ")
    
     if visited is None:
         visited = set()
@@ -84,14 +88,15 @@ def get_sitemap_links(sitemap_url: str, visited=None) -> list:
 
     for loc in soup.find_all("loc"):
         urls.append(loc.text.strip())
+    logger.info("\n The Urls Result",urls)    
 
     return urls
 
 def scrape_page(url: str) -> dict:
     
 
-    print(f"\n🔎 Scraping: {url}")
-    print(f"\n🔎 Scraping: {url}")
+    logger.info(f"\n🔎 Scraping: {url}")
+    logger.info(f"\n🔎 Scraping: {url}")
     
     # Configure Selenium options
     from selenium import webdriver
@@ -122,7 +127,7 @@ def scrape_page(url: str) -> dict:
             # Short sleep to allow dynamic content (Angular/React) to hydrate
             time.sleep(3) 
         except Exception as e:
-            print(f"⚠️ Timeout/Warning waiting for page load: {e}")
+            logger.info(f" \n ⚠️ Timeout/Warning waiting for page load: {e}")
 
         page_source = driver.page_source
         current_url = driver.current_url # In case of redirects
@@ -723,33 +728,33 @@ def Domain_Page_Analysis(Domain_URL:str,Competetior_URL:list[str],flag=0)->dict:
     It is used to preform Domain Page Through web scraping
     """   
    
-    print("In Page Analysis with Web Scraping \n")
+    logger.info("In Page Analysis with Web Scraping \n")
     Domain_web_Scraping=scrape_page(Domain_URL)
-    print("\n This is reposne from scraping web ",Domain_web_Scraping)
+    logger.info("\n This is reposne from scraping web ",Domain_web_Scraping)
 
     # Competitor scraping logic added here
     competitor_data = []
     if Competetior_URL:
-        print("\n🔎 Scraping Competitor Pages...")
+        logger.info("\n🔎 Scraping Competitor Pages...")
         for comp_url in Competetior_URL:
             if comp_url: # check for empty strings
                 comp_data = scrape_page(comp_url)
                 competitor_data.append(comp_data)
-        print(f"\n✅ Scraped {len(competitor_data)} competitor pages.")
+        logger.info(f"\n✅ Scraped {len(competitor_data)} competitor pages.")
 
     if flag==1:
-        print("\n This is reposne from scraping web ",Domain_web_Scraping)
+        logger.info("\n This is reposne from scraping web ",Domain_web_Scraping)
         Interlinking_Present=Domain_web_Scraping['internal_links']
-        print(" Getting the Links in the Sitemap \n")
+        logger.info(" Getting the Links in the Sitemap \n")
         Total_link_InDomainURL=get_sitemap_links(Domain_URL)
-        print("The Links not present in interlinking \n")
+        logger.info("The Links not present in interlinking \n")
         Link_Not_Present=set(Total_link_InDomainURL)-set(Interlinking_Present)
-        print(" Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
+        logger.info("Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
         # Pass competitor_data instead of just URLs
         LLM_Analysis=analyze_with_llm(Domain_web_Scraping,Domain_URL,competitor_data) 
         return {"page_Analysis":LLM_Analysis,"Linking_Not_Present":Link_Not_Present, "competitor_data": competitor_data}
     else:
-        print(" Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
+        logger.info("Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
         # Pass competitor_data instead of just URLs
         LLM_Analysis=analyze_with_llm(Domain_web_Scraping,Domain_URL,competitor_data)
         return {"page_Analysis":LLM_Analysis, "competitor_data": competitor_data}
@@ -836,7 +841,7 @@ def Keyword_Overview(Keywords:list[str],location="India"):
     :type keywords: list[str]
     :param location: Description
     """
-    print("Where this is used to get these Keyword Overview for the given data \n")
+    logger.info("Where this is used to get these Keyword Overview for the given data \n")
     keyword_info=[]
     post_data = dict()
     # simple way to set a task
@@ -867,15 +872,16 @@ def Keyword_Overview(Keywords:list[str],location="India"):
         for items in response:
             keyword_info.append({"keyword":items['keyword'],"search_volume":items['keyword_info']['search_volume'],
             "keyword_difficulty":items['keyword_properties']['keyword_difficulty'],"main_intent":items['search_intent_info']['main_intent']})
+        logger.info("This is the Resposne from the Keyword Overview",keyword_info)    
         return {"Info":keyword_info}
         # do something with result
     else:
-        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
+        logger.Error("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
         return {"Error":True}
 
 def Domain_Ranking(Domain_Name:str,location="India"):
 
-    print("\n In domain")
+    logger.info("\n In domain")
    
     """
     Used to Get the seed for the website
@@ -950,67 +956,12 @@ def Domain_Ranking(Domain_Name:str,location="India"):
         print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
         return {"Error":True}
     
-def get_gsheet_client(service_account_json_path: str):
-    creds = Credentials.from_service_account_file(
-        service_account_json_path,
-        scopes=SHEET_SCOPES
-    )
-    return gspread.authorize(creds)
-
-def get_or_create_worksheet(spreadsheet, title: str, rows: int = 3000, cols: int = 20):
-    try:
-        return spreadsheet.worksheet(title)
-    except gspread.exceptions.WorksheetNotFound:
-        return spreadsheet.add_worksheet(title=title, rows=str(rows), cols=str(cols))
-
-def write_sheet(ws, header: List[str], rows: List[List[Any]]):
-    ws.clear()
-    ws.update("A1", [header])
-    if rows:
-        ws.update("A2", rows)
-
-def create_new_sheet_and_share(
-    gclient,
-    sheet_name: str,
-    share_mode: str = "anyone_writer",
-    share_emails: List[str] | None = None
-):
-    """
-    share_mode:
-      - "anyone_reader"  -> anyone with link can view
-      - "anyone_writer"  -> anyone with link can edit
-      - "email_writer"   -> share with emails as editor
-      - "email_reader"   -> share with emails as viewer
-    """
-    sh = gclient.create(sheet_name)
-
-    # remove default "Sheet1" if you want
-    # (optional)
-    # ws0 = sh.sheet1
-    # sh.del_worksheet(ws0)
-
-    if share_mode in ["anyone_reader", "anyone_writer"]:
-        role = "reader" if share_mode == "anyone_reader" else "writer"
-        sh.share(None, perm_type="anyone", role=role)
-
-    elif share_mode in ["email_writer", "email_reader"]:
-        if not share_emails:
-            raise ValueError("share_emails is required for email_* share modes")
-
-        role = "reader" if share_mode == "email_reader" else "writer"
-        for email in share_emails:
-            sh.share(email, perm_type="user", role=role)
-
-    else:
-        raise ValueError("Invalid share_mode")
-
-    return sh
-
 def Present_page_ranking(url): 
+    logger.info("Now Processing the The present page \n ")
 
 # You can download this file from here https://cdn.dataforseo.com/v3/examples/python/python_Client.zip
     ranking_keywords=[]
-    client = RestClient("marketing@bdcode.in", "614aa720fb95e1b5")
+    
     post_data = dict()
     # simple way to set a task
     post_data[len(post_data)] = dict(
@@ -1050,16 +1001,17 @@ def Present_page_ranking(url):
             
              
             result= Paging_ranking_analyis(ranking_keywords) 
+            logger.info("The resposne from Present Page Ranking",result)
             return result          
         # do something with result
     else:
-        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
+        logger.error("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
         return {"Error":True}
     
 def People_Also_Ask_for_Keywords(Keyword,location="India"):
 
     People_Also_Ask_for_Keyword=[]
-    print(f"\n In the People also ask for keyword for this keyword {Keyword} \n")
+    logger.info(f"\n In the People also ask for keyword for this keyword {Keyword} \n")
     
     post_data = dict()
    
@@ -1106,8 +1058,8 @@ def People_Also_Ask_for_Keywords(Keyword,location="India"):
         return {"Error":True,"Message":response["status_message"]}
     
 def Long_tail_keywords(Keyword,location="India"):
-    print("Now processing for long tail keyword \n ")
-    print(f"Noe processing this keyword for long tail keyword:{Keyword}")
+    logger.info("Now processing for long tail keyword \n ")
+    logger.info(f" \n Now processing this keyword for long tail keyword:{Keyword}")
 
     Long_tail_keyword=[]
     post_data = dict()
@@ -1151,11 +1103,11 @@ def Long_tail_keywords(Keyword,location="India"):
 
         # do something with result
     else:
-        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"])) 
+        logger.error("error. Code: %d Message: %s" % (response["status_code"], response["status_message"])) 
         return {"Error":True,"Message":response["status_message"]}  
 
 def related_keywords(keywords,location="india"):
-    print("Now in the processing of related keywords \n")
+    logger.info("\n Now in the processing of related keywords \n")
     Related_Keyword=[]
    
     post_data = dict()
@@ -1199,7 +1151,7 @@ def related_keywords(keywords,location="india"):
 
         # do something with result
     else:
-        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))  
+        logger.info("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))  
         return {"Error":True,"Message":response["status_message"]} 
         # do something with result
           
