@@ -104,7 +104,7 @@ export const OverallStrategy: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-gray-100 bg-gray-50/50">
+                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 p-8 border-b border-gray-100">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
                             <Info size={20} />

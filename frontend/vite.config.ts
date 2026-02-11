@@ -14,5 +14,10 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
+  },
+  preview: {
+    host: '0.0.0.0',                   // allow external access
+    port: 3000,                        // Vite preview port
+    allowedHosts: ['traffic.bdcode.in'] // add your domain here
   }
 })
