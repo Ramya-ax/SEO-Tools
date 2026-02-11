@@ -1,0 +1,19 @@
+FROM python:3.11.7
+
+# Set the working directory in the container
+WORKDIR /SEOTOOL_Backend
+
+# Copy the current directory contents into the container 
+COPY . /SEOTOOL_Backend/
+
+# install requirements
+RUN pip install -r requirements.txt
+
+# Expose port 3014 to allow outside access
+EXPOSE 3014
+
+#to download the spacy 
+RUN python -m spacy download en_core_web_sm
+
+# Run the python application
+CMD ["uvicorn", "bin.main:app", "--host", "0.0.0.0", "--port", "3014"]
