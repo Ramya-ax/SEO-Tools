@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Info } from 'lucide-react';
 import { TagInput } from '../components/ui/TagInput';
 import { ActionButton } from '../components/ui/ActionButton';
-import { api } from '../services/api';
+import { SeoApi } from '../services/api';
 import type { KeywordResearchPayload } from '../types/index';
 
 export const KeywordResearch: React.FC = () => {
@@ -28,12 +28,12 @@ export const KeywordResearch: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await api.post('/Keyword', {
+            const data = await SeoApi.submitKeywordResearch({
                 Keywords: formData.Keywords
             });
 
             navigate('/report/keyword-research', {
-                state: { reportData: response.data }
+                state: { reportData: data }
             });
 
         } catch (error) {

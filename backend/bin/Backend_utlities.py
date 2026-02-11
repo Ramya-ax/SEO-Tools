@@ -8,18 +8,29 @@ from pydantic import BaseModel, Field
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import gzip
-from client import RestClient
+from bin.client import RestClient
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from typing import List, Any
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
-from logs.log import logging
-logger=logging()
+from logs.log import my_log
+logger=my_log()
 
-client = RestClient(os.getenv("DATAFORSEO_USERNAME"), os.getenv("DATAFORSEO_PASSWOR"))
+username = os.getenv("DATAFORSEO_USERNAME")
+password = os.getenv("DATAFORSEO_PASSWORD")
+cwd = os.getcwd()
+env_path = os.path.join(cwd, ".env")
+exists = os.path.exists(env_path)
+
+logger.info(f"DEBUG: CWD={cwd}, .env exists={exists}")
+logger.info(f"DataForSEO Creds: User={username}, Pass Length={len(password) if password else 0}")
+if password:
+    logger.info(f"Pass Start: {password[:2]}...{password[-2:]}")
+
+client = RestClient(username, password)
 Gen_client = genai.Client(api_key=os.getenv("GEMINI_APIKEY"))
 visited_sitemaps=set()    
 REQUEST_TIMEOUT = (5, 40)

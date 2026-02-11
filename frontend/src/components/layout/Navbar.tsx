@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { BarChart3, LayoutDashboard } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { BarChart3, LayoutDashboard, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
 
     return (
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -20,6 +21,7 @@ export const Navbar: React.FC = () => {
                                 SEO Analyzer
                             </span>
                         </Link>
+
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-1">
@@ -38,7 +40,19 @@ export const Navbar: React.FC = () => {
                         </div>
                     </div>
 
-
+                    <div className="flex items-center">
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('isAuthenticated');
+                                localStorage.removeItem('userEmail');
+                                navigate('/login');
+                            }}
+                            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                            <LogOut size={16} />
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SeoApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Network, Loader2, Save } from 'lucide-react';
 import { Input } from '../components/ui/Input';
@@ -21,6 +22,7 @@ export const SitemapSeedKeyword: React.FC = () => {
         const newErrors: typeof errors = {};
         if (!formData.seedKeyword.trim()) newErrors.seedKeyword = 'Seed Keyword is required';
         if (!formData.country.trim()) newErrors.country = 'Country is required';
+        if (!formData.city.trim()) newErrors.city = 'City is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -32,21 +34,9 @@ export const SitemapSeedKeyword: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/Keyword_sitemap', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    Keyword: formData.seedKeyword
-                }),
+            const data = await SeoApi.submitKeywordSitemap({
+                Keyword: formData.seedKeyword
             });
-
-            if (!response.ok) {
-                throw new Error('Sitemap generation failed');
-            }
-
-            const data = await response.json();
 
             if (data && data.Keyword_Sitemap) {
                 navigate('/report/sitemap-seed-keyword', {
@@ -57,10 +47,12 @@ export const SitemapSeedKeyword: React.FC = () => {
                 });
             } else {
                 console.error('Invalid response format', data);
+                alert('Invalid response format from server.');
             }
 
         } catch (error) {
             console.error('Error generating sitemap:', error);
+            alert('Failed to generate sitemap. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -133,7 +125,7 @@ export const SitemapSeedKeyword: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                 error={errors.city}
                                 disabled={loading}
-                                helperText="Optional city-level targeting for local SEO."
+                                helperText="City-level targeting for local SEO."
                             />
                         </div>
                     </div>

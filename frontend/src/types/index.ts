@@ -355,3 +355,57 @@ export interface KeywordResearchResponse {
     Related_Keywords: RelatedKeywordItem[];
     Each_keyword_info: EachKeywordInfo[];
 }
+
+// ==========================================
+// 6. KEYWORD SITEMAP
+// ==========================================
+
+export interface KeywordSitemapPayload {
+    Keyword: string;
+}
+
+export interface KeywordSitemapResponse {
+    Keyword_Sitemap: any; // Define generated sitemap structure if possible, usually hierarchical
+}
+
+// ==========================================
+// 7. KEYWORD DISTRIBUTION (PIE)
+// ==========================================
+
+export interface KeywordDistributionPayload {
+    Keyword: string;
+}
+
+export interface KeywordDistributionResponse {
+    Related_Question: string[];
+    Related_Searchs: string[];
+    Shopping: any[];
+    AIMODE: string[];
+}
+
+// ==========================================
+// 8. PAGE ANALYSIS
+// ==========================================
+
+export interface PageAnalysisPayload {
+    Domain_Url: string;
+    Comp_Url: string[];
+}
+
+export interface PageAnalysisResponse {
+    Page: any; // This matches the specific structure returned by Domain_Page_Analysis
+}
+
+// ==========================================
+// 9. LOGIN
+// ==========================================
+
+export interface LoginPayload {
+    UserName: string;
+    Password: string;
+}
+
+export interface LoginResponse {
+    Status: boolean;
+    Message?: string;
+}

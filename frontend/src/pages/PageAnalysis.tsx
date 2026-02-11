@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SeoApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search, Loader2, FileText } from 'lucide-react';
 import { Input } from '../components/ui/Input';
@@ -31,24 +32,15 @@ export const PageAnalysis: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/Page', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    Domain_Url: formData.domain,
-                    Comp_Url: [formData.competitorUrl] // Backend expects a list of competitor URLs
-                }),
+            const data = await SeoApi.submitPageAnalysis({
+                Domain_Url: formData.domain,
+                Comp_Url: [formData.competitorUrl]
             });
 
-            if (!response.ok) {
-                throw new Error('Analysis failed');
-            }
+            // The backend returns { "Page": { ... } } or we handled it in api.ts
+            // SeoApi.submitPageAnalysis returns response.data
+            // response.data from backend is { "Page": ... }
 
-            const data = await response.json();
-            // The backend returns { "Page": { ... analysis data ... } }
-            // We need to pass data.Page to the report
             if (data && data.Page) {
                 navigate('/report/page-analysis', { state: { reportData: data.Page } });
             } else {

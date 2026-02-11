@@ -7,7 +7,9 @@ import type {
     SharedMissingKeywordsPayload,
     SharedMissingKeywordsResponse,
     MonthWisePlanPayload,
-    MonthWisePlanResponse
+    MonthWisePlanResponse,
+    LoginPayload,
+    LoginResponse
 } from '../types';
 
 // Use current origin or local dev tunnel. 
@@ -47,5 +49,37 @@ export const SeoApi = {
     submitMonthWisePlan: async (payload: MonthWisePlanPayload): Promise<MonthWisePlanResponse> => {
         const response = await api.post<any>('/Month', payload);
         return response.data.Report || response.data;
+    },
+
+    // 5. Keyword Sitemap
+    submitKeywordSitemap: async (payload: { Keyword: string }): Promise<any> => {
+        const response = await api.post<any>('/Keyword_sitemap', payload);
+        return response.data;
+    },
+
+    // 6. Keyword Research
+    submitKeywordResearch: async (payload: { Keywords: string[] }): Promise<any> => {
+        const response = await api.post<any>('/Keyword', payload);
+        return response.data;
+    },
+
+    // 7. Keyword Distribution
+    submitKeywordDistribution: async (payload: { Keyword: string }): Promise<any> => {
+        const response = await api.post<any>('/Keyword_Pie', payload);
+        return response.data;
+    },
+
+    // 8. Page Analysis
+    submitPageAnalysis: async (payload: { Domain_Url: string; Comp_Url: string[] }): Promise<any> => {
+        const response = await api.post<any>('/Page', payload);
+        // The backend returns { "Page": { ... } }
+        // We usually want the inner content, but let's return the whole object and let component destructure if needed
+        return response.data;
+    },
+
+    // 9. Login
+    submitLogin: async (payload: LoginPayload): Promise<LoginResponse> => {
+        const response = await api.post<LoginResponse>('/Login', payload);
+        return response.data;
     }
 };

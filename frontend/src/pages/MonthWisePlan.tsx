@@ -40,21 +40,33 @@ export const MonthWisePlan: React.FC = () => {
         endMonth: ''
     });
 
+    const [errors, setErrors] = useState<Partial<Record<keyof MonthWisePlanFormData, string>>>({});
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error when user types
+        if (errors[name as keyof MonthWisePlanFormData]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     const validate = () => {
-        if (!formData.domainUrl.trim()) {
-            alert("Domain URL is required");
-            return false;
-        }
-        if (!formData.pageUrl.trim()) {
-            alert("Page URL is required");
-            return false;
-        }
-        return true;
+        const newErrors: typeof errors = {};
+        if (!formData.domainUrl.trim()) newErrors.domainUrl = 'Domain URL is required';
+        if (!formData.pageUrl.trim()) newErrors.pageUrl = 'Page URL is required';
+        if (!formData.pageInfo.trim()) newErrors.pageInfo = 'Page context is required';
+        if (formData.competitors.length === 0) newErrors.competitors = 'At least one competitor is required';
+        if (formData.products.length === 0) newErrors.products = 'Product name is required';
+        if (formData.keywords.length === 0) newErrors.keywords = 'At least one keyword is required';
+        if (formData.targetAudience.length === 0) newErrors.targetAudience = 'Target audience is required';
+        if (formData.goals.length === 0) newErrors.goals = 'Business goal is required';
+        if (!formData.previousStrategy.trim()) newErrors.previousStrategy = 'Previous strategy is required';
+        if (!formData.startMonth) newErrors.startMonth = 'Start month is required';
+        if (!formData.endMonth) newErrors.endMonth = 'End month is required';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -146,6 +158,7 @@ export const MonthWisePlan: React.FC = () => {
                                 onChange={handleInputChange}
                                 placeholder="https://example.com"
                                 required
+                                error={errors.domainUrl}
                                 disabled={loading}
                                 helperText="Main website URL."
                             />
@@ -156,6 +169,7 @@ export const MonthWisePlan: React.FC = () => {
                                 onChange={handleInputChange}
                                 placeholder="https://example.com/target-page"
                                 required
+                                error={errors.pageUrl}
                                 disabled={loading}
                                 helperText="Specific page to plan for."
                             />
@@ -168,6 +182,7 @@ export const MonthWisePlan: React.FC = () => {
                             rows={3}
                             placeholder="Briefly describe the page content and purpose..."
                             required
+                            error={errors.pageInfo}
                             disabled={loading}
                         />
                     </div>
@@ -180,6 +195,7 @@ export const MonthWisePlan: React.FC = () => {
                                 label="Target Audience"
                                 value={formData.targetAudience}
                                 onChange={(tags) => setFormData(prev => ({ ...prev, targetAudience: tags }))}
+                                error={errors.targetAudience}
                                 disabled={loading}
                                 placeholder="e.g., Small Business Owners"
                             />
@@ -187,6 +203,7 @@ export const MonthWisePlan: React.FC = () => {
                                 label="Competitors"
                                 value={formData.competitors}
                                 onChange={(tags) => setFormData(prev => ({ ...prev, competitors: tags }))}
+                                error={errors.competitors}
                                 disabled={loading}
                                 placeholder="e.g., Competitor X"
                             />
@@ -196,6 +213,7 @@ export const MonthWisePlan: React.FC = () => {
                                 label="Business Goals"
                                 value={formData.goals}
                                 onChange={(tags) => setFormData(prev => ({ ...prev, goals: tags }))}
+                                error={errors.goals}
                                 disabled={loading}
                                 placeholder="e.g., Improve Organic Traffic by 15%"
                             />
@@ -203,6 +221,7 @@ export const MonthWisePlan: React.FC = () => {
                                 label="Product / Service Names"
                                 value={formData.products}
                                 onChange={(tags) => setFormData(prev => ({ ...prev, products: tags }))}
+                                error={errors.products}
                                 disabled={loading}
                                 placeholder="e.g., Premium Widget"
                             />
@@ -211,6 +230,7 @@ export const MonthWisePlan: React.FC = () => {
                             label="Priority Keywords"
                             value={formData.keywords}
                             onChange={(tags) => setFormData(prev => ({ ...prev, keywords: tags }))}
+                            error={errors.keywords}
                             disabled={loading}
                             placeholder="e.g., buy widgets online"
                         />
@@ -228,10 +248,15 @@ export const MonthWisePlan: React.FC = () => {
                                     name="startMonth"
                                     value={formData.startMonth}
                                     onChange={handleInputChange}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2.5 px-3 border text-sm"
+                                    className={`w-full rounded-lg border shadow-sm focus:ring-2 transition-all duration-200 py-2.5 px-3 text-sm
+                                        ${errors.startMonth
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                            : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-200'
+                                        }`}
                                     required
                                     disabled={loading}
                                 />
+                                {errors.startMonth && <p className="mt-1 text-xs text-red-500">{errors.startMonth}</p>}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">End Month</label>
@@ -240,21 +265,27 @@ export const MonthWisePlan: React.FC = () => {
                                     name="endMonth"
                                     value={formData.endMonth}
                                     onChange={handleInputChange}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2.5 px-3 border text-sm"
+                                    className={`w-full rounded-lg border shadow-sm focus:ring-2 transition-all duration-200 py-2.5 px-3 text-sm
+                                        ${errors.endMonth
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                            : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-200'
+                                        }`}
                                     required
                                     disabled={loading}
                                 />
+                                {errors.endMonth && <p className="mt-1 text-xs text-red-500">{errors.endMonth}</p>}
                             </div>
                         </div>
 
                         <TextArea
-                            label="Previous Strategy (Optional)"
+                            label="Previous Strategy"
                             name="previousStrategy"
                             value={formData.previousStrategy}
                             onChange={handleInputChange}
                             rows={3}
                             placeholder="What strategy was applied previously?"
                             disabled={loading}
+                            error={errors.previousStrategy}
                         />
                     </div>
 

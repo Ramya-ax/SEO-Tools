@@ -11,15 +11,15 @@ import json
 from typing import List, Dict, Optional, Literal,Union
 from pydantic import BaseModel, Field
 import asyncio
-from client import RestClient
+from bin.client import RestClient
 import os
 from dotenv import load_dotenv
 load_dotenv()
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field
 from bin.Keyword_Pie import serach_engine,Serach_Shopping,AI_MODE
-from logs.log import logging
-logger=logging()
+from logs.log import my_log
+logger=my_log()
 
 
 Gen_client = genai.Client(api_key=os.getenv("GEMINI_APIKEY"))

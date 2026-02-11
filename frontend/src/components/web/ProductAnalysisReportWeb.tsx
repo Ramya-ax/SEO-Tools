@@ -136,7 +136,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                         {data.competetior_Analyisis?.map((comp, i) => (
                             <div key={i} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 truncate">
-                                    <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                                    <span className="text-indigo-600 font-bold mr-1">#{i + 1}</span>
                                     {comp.competitor}
                                 </h3>
                                 <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 leading-relaxed border border-gray-100">

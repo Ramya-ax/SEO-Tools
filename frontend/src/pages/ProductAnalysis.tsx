@@ -31,6 +31,13 @@ export const ProductAnalysis: React.FC = () => {
         const newErrors: typeof errors = {};
         if (!formData.domainUrl.trim()) newErrors.domainUrl = 'Domain URL is required';
         if (!formData.productUrl.trim()) newErrors.productUrl = 'Product URL is required';
+        if (formData.competitorUrls.length === 0) newErrors.competitorUrls = 'At least one competitor URL is required';
+        if (!formData.description.trim()) newErrors.description = 'Product description is required';
+        if (formData.products.length === 0) newErrors.products = 'Product name/variant is required';
+        if (formData.keywords.length === 0) newErrors.keywords = 'At least one keyword is required';
+        if (formData.targetAudience.length === 0) newErrors.targetAudience = 'Target audience is required';
+        if (formData.goal.length === 0) newErrors.goal = 'Goal is required';
+        if (!formData.previousStrategy.trim()) newErrors.previousStrategy = 'Previous strategy context is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -142,6 +149,7 @@ export const ProductAnalysis: React.FC = () => {
                             placeholder="https://competitor.com/product"
                             value={formData.competitorUrls}
                             onChange={(tags) => setFormData({ ...formData, competitorUrls: tags })}
+                            error={errors.competitorUrls}
                             disabled={loading}
                             helperText="Add direct links to competitor product pages (max 5)."
                         />
@@ -156,6 +164,7 @@ export const ProductAnalysis: React.FC = () => {
                             placeholder="Briefly describe the product..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            error={errors.description}
                             disabled={loading}
                             rows={3}
                         />
@@ -165,6 +174,7 @@ export const ProductAnalysis: React.FC = () => {
                                 label="Product Variants / Names"
                                 value={formData.products}
                                 onChange={(tags) => setFormData({ ...formData, products: tags })}
+                                error={errors.products}
                                 disabled={loading}
                                 helperText="Common names for this product."
                             />
@@ -172,6 +182,7 @@ export const ProductAnalysis: React.FC = () => {
                                 label="Target Keywords"
                                 value={formData.keywords}
                                 onChange={(tags) => setFormData({ ...formData, keywords: tags })}
+                                error={errors.keywords}
                                 disabled={loading}
                                 placeholder="e.g. buy widgets, best widgets"
                             />
@@ -187,6 +198,7 @@ export const ProductAnalysis: React.FC = () => {
                                 label="Target Audience"
                                 value={formData.targetAudience}
                                 onChange={(tags) => setFormData({ ...formData, targetAudience: tags })}
+                                error={errors.targetAudience}
                                 disabled={loading}
                                 placeholder="e.g. Budget shoppers"
                             />
@@ -194,16 +206,18 @@ export const ProductAnalysis: React.FC = () => {
                                 label="Goals"
                                 value={formData.goal}
                                 onChange={(tags) => setFormData({ ...formData, goal: tags })}
+                                error={errors.goal}
                                 disabled={loading}
                                 placeholder="e.g. Conversion, Traffic"
                             />
                         </div>
 
                         <TextArea
-                            label="Previous Strategy (Optional)"
+                            label="Previous Strategy"
                             placeholder="Describe any previous SEO work done on this page..."
                             value={formData.previousStrategy}
                             onChange={(e) => setFormData({ ...formData, previousStrategy: e.target.value })}
+                            error={errors.previousStrategy}
                             disabled={loading}
                             rows={3}
                         />

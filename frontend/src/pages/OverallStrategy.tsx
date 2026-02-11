@@ -30,6 +30,12 @@ export const OverallStrategy: React.FC = () => {
         const newErrors: typeof errors = {};
         if (!formData.domain.trim()) newErrors.domain = 'Domain is required';
         if (!formData.description.trim()) newErrors.description = 'Description is required';
+        if (formData.competitors.length === 0) newErrors.competitors = 'At least one competitor is required';
+        if (formData.products.length === 0) newErrors.products = 'At least one product/service is required';
+        if (formData.target.length === 0) newErrors.target = 'At least one keyword is required';
+        if (formData.audience.length === 0) newErrors.audience = 'Target audience is required';
+        if (formData.goal.length === 0) newErrors.goal = 'Business goal is required';
+        if (!formData.currentSeoState.trim()) newErrors.currentSeoState = 'Current SEO status is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -141,6 +147,7 @@ export const OverallStrategy: React.FC = () => {
                                 label="Target Audience"
                                 value={formData.audience}
                                 onChange={(tags) => setFormData({ ...formData, audience: tags })}
+                                error={errors.audience}
                                 disabled={loading}
                                 placeholder="Enter & press enter"
                                 helperText="Who are your ideal customers?"
@@ -149,6 +156,7 @@ export const OverallStrategy: React.FC = () => {
                                 label="Business Goals"
                                 value={formData.goal}
                                 onChange={(tags) => setFormData({ ...formData, goal: tags })}
+                                error={errors.goal}
                                 disabled={loading}
                                 placeholder="e.g. Traffic, Leads"
                                 helperText="What do you want to achieve?"
@@ -165,6 +173,7 @@ export const OverallStrategy: React.FC = () => {
                                 label="Competitors"
                                 value={formData.competitors}
                                 onChange={(tags) => setFormData({ ...formData, competitors: tags })}
+                                error={errors.competitors}
                                 disabled={loading}
                                 helperText="List top 3-5 competitors."
                             />
@@ -172,6 +181,7 @@ export const OverallStrategy: React.FC = () => {
                                 label="Core Products / Services"
                                 value={formData.products}
                                 onChange={(tags) => setFormData({ ...formData, products: tags })}
+                                error={errors.products}
                                 disabled={loading}
                                 helperText="Key offerings you want to rank for."
                             />
@@ -181,6 +191,7 @@ export const OverallStrategy: React.FC = () => {
                             label="Priority Keywords"
                             value={formData.target}
                             onChange={(tags) => setFormData({ ...formData, target: tags })}
+                            error={errors.target}
                             disabled={loading}
                             placeholder="e.g. seo, analysis"
                             helperText="Keywords you consider most important."
@@ -195,6 +206,7 @@ export const OverallStrategy: React.FC = () => {
                             placeholder="Describe your current SEO efforts and status..."
                             value={formData.currentSeoState}
                             onChange={(e) => setFormData({ ...formData, currentSeoState: e.target.value })}
+                            error={errors.currentSeoState}
                             disabled={loading}
                             helperText="What have you done so far? What is working/not working?"
                             rows={3}

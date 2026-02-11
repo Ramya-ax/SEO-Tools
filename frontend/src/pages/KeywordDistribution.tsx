@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SeoApi } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart2, Loader2, Save } from 'lucide-react';
 import { Input } from '../components/ui/Input';
@@ -21,6 +22,7 @@ export const KeywordDistribution: React.FC = () => {
         const newErrors: typeof errors = {};
         if (!formData.seedKeyword.trim()) newErrors.seedKeyword = 'Seed Keyword is required';
         if (!formData.country.trim()) newErrors.country = 'Country is required';
+        if (!formData.city.trim()) newErrors.city = 'City is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -32,22 +34,10 @@ export const KeywordDistribution: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:8000/Keyword_Pie', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    Keyword: formData.seedKeyword,
-                    // Backend currently only accepts Keyword
-                }),
+            const data = await SeoApi.submitKeywordDistribution({
+                Keyword: formData.seedKeyword
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch distribution data');
-            }
-
-            const data = await response.json();
             navigate('/report/keyword-distribution', { state: { reportData: data, formData } });
         } catch (error) {
             console.error('Error:', error);
@@ -123,7 +113,7 @@ export const KeywordDistribution: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                 error={errors.city}
                                 disabled={loading}
-                                helperText="Optional city targeting for localized keyword mapping."
+                                helperText="City targeting for localized keyword mapping."
                             />
                         </div>
                     </div>

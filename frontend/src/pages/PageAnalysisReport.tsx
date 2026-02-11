@@ -202,7 +202,7 @@ export const PageAnalysisReport: React.FC = () => {
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 pb-12">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4 no-print">
                 <button
                     onClick={() => navigate('/page-analysis')}
                     className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
@@ -212,23 +212,28 @@ export const PageAnalysisReport: React.FC = () => {
                 </button>
             </div>
 
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Page Analysis Report</h1>
-                    <p className="text-gray-600">Deep dive into content, UX, and competitor comparison.</p>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden print:shadow-none print:border-none font-sans">
+                {/* Report Header */}
+                <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-10 print:bg-indigo-900 print:text-white">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-2">Page Analysis Report</h1>
+                            <p className="text-indigo-200">Deep dive into content, UX, and competitor comparison.</p>
+                        </div>
+                        <div className={`px-4 py-2 rounded-lg border ${reportData.optimized_for_business_goals ? 'bg-green-500/20 border-green-400/30 text-green-100' : 'bg-yellow-500/20 border-yellow-400/30 text-yellow-100'} backdrop-blur-sm`}>
+                            <span className="font-semibold block text-xs uppercase tracking-wide opacity-80">Optimization Status</span>
+                            <span className="font-bold text-lg">{reportData.optimized_for_business_goals ? 'Optimized' : 'Needs Improvement'}</span>
+                        </div>
+                    </div>
                 </div>
-                <div className={`px-4 py-2 rounded-lg border ${reportData.optimized_for_business_goals ? 'bg-green-50 border-green-200 text-green-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}>
-                    <span className="font-semibold block text-sm uppercase tracking-wide">Optimization Status</span>
-                    <span className="font-bold">{reportData.optimized_for_business_goals ? 'Optimized' : 'Needs Improvement'}</span>
-                </div>
-            </div>
 
-            <div className="space-y-6">
-                <SectionCard title="Goal Clarity" data={reportData.goal_clarity} />
-                <SectionCard title="Navigation Effectiveness" data={reportData.navigation_effectiveness} />
-                <SectionCard title="EEAT Strength" data={reportData.eeat_strength} />
-                <SectionCard title="Conversion Intent" data={reportData.conversion_intent} />
-                <SectionCard title="Competitor Gap Analysis" data={reportData.competitor_gap_analysis} />
+                <div className="p-10 space-y-8">
+                    <SectionCard title="Goal Clarity" data={reportData.goal_clarity} />
+                    <SectionCard title="Navigation Effectiveness" data={reportData.navigation_effectiveness} />
+                    <SectionCard title="EEAT Strength" data={reportData.eeat_strength} />
+                    <SectionCard title="Conversion Intent" data={reportData.conversion_intent} />
+                    <SectionCard title="Competitor Gap Analysis" data={reportData.competitor_gap_analysis} />
+                </div>
             </div>
         </div>
     );

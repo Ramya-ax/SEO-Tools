@@ -112,7 +112,10 @@ export const OverallStrategyReportWeb: React.FC<OverallStrategyReportWebProps> =
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {(Array.isArray(data.competetior_Analyisis) ? data.competetior_Analyisis : []).map((comp: any, i) => (
                             <div key={i} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow bg-white">
-                                <h3 className="font-bold text-gray-900 mb-4 truncate text-lg" title={comp.Competitor || comp.competitor}>{comp.Competitor || comp.competitor || 'Competitor Site'}</h3>
+                                <h3 className="font-bold text-gray-900 mb-4 truncate text-lg" title={comp.Competitor || comp.competitor}>
+                                    <span className="text-indigo-600 mr-2">#{i + 1}</span>
+                                    {comp.Competitor || comp.competitor || 'Competitor Site'}
+                                </h3>
                                 <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap theme-dark:text-gray-300">
                                     {comp.Summary || comp.analysis || comp.summary || 'No analysis available.'}
                                 </div>
