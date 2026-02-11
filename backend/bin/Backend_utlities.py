@@ -104,10 +104,7 @@ def get_sitemap_links(sitemap_url: str, visited=None) -> list:
     return urls
 
 def scrape_page(url: str) -> dict:
-    
-
-    logger.info(f"\n🔎 Scraping: {url}")
-    logger.info(f"\n🔎 Scraping: {url}")
+    logger.info(f"\n Scraping: {url}")
     
     # Configure Selenium options
     from selenium import webdriver
@@ -125,28 +122,72 @@ def scrape_page(url: str) -> dict:
     chrome_options.add_argument(f"user-agent={REAL_HEADERS['User-Agent']}")
     # Suppress logging
     chrome_options.add_argument("--log-level=3")
+    
+    # Add anti-detection arguments
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled") 
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--start-maximized")
 
     driver = None
+    page_source = ""
+    
     try:
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(30)
+        
+        # Stealth: Overwrite navigator.webdriver property
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                })
+            """
+        })
+        
+        driver.set_page_load_timeout(60) # Increased timeout
         driver.get(url)
         
         # Wait for the body to be present to ensure some content has loaded
         try:
-            WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-            # Short sleep to allow dynamic content (Angular/React) to hydrate
-            time.sleep(3) 
+            # Wait for body
+            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            
+            # Scroll to bottom to trigger lazy loading
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(2) # Give it a moment to settle
+            
         except Exception as e:
-            logger.info(f" \n ⚠️ Timeout/Warning waiting for page load: {e}")
+            logger.warning(f"⚠️ Timeout waiting for body or scroll: {e}")
 
         page_source = driver.page_source
-        current_url = driver.current_url # In case of redirects
         
     except Exception as e:
+        logger.error(f"❌ Selenium Error for {url}: {e}")
+        # Fallback to requests if Selenium fails entirely
+        try:
+            logger.info("🔄 Falling back to simple requests...")
+            resp = requests.get(url, headers=REAL_HEADERS, timeout=10)
+            if resp.status_code == 200:
+                page_source = resp.text
+            else:
+                logger.error(f"❌ Requests fallback failed with status: {resp.status_code}")
+        except Exception as ex:
+             logger.error(f"❌ Requests fallback exception: {ex}")
+
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except:
+                pass
+
+    if not page_source:
         return {
             "url": url,
-            "error": f"Selenium Error: {str(e)}",
+            "error": "Failed to retrieve content (Empty Response)",
             "title": "",
             "h1": [],
             "meta_description": "",
@@ -158,17 +199,31 @@ def scrape_page(url: str) -> dict:
             "word_count": 0,
             "images_count": 0,
         }
-    finally:
-        if driver:
-            driver.quit()
 
     soup = BeautifulSoup(page_source, "lxml")
-    if not soup.title:
-        print("Warning: No title found even after Selenium render.")
+    
+    title = soup.title.string.strip() if soup.title and soup.title.string else ""
+    if not title:
+         # Try getting title from h1 or og:title if missing
+         og_title = soup.find("meta", property="og:title")
+         if og_title:
+             title = og_title.get("content", "")
+    
+    if not title:
+        logger.warning(f"⚠️ No title found for {url}")
 
     domain = urlparse(url).netloc
 
+    # Remove script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()
+
     page_text = " ".join(p.get_text(" ", strip=True) for p in soup.find_all("p"))
+    
+    # If text is very short, try getting all text from body
+    if len(page_text) < 100 and soup.body:
+        page_text = soup.body.get_text(" ", strip=True)
+
     internal_links, external_links, cta_links = [], [], []
 
     for a in soup.find_all("a", href=True):
@@ -177,7 +232,7 @@ def scrape_page(url: str) -> dict:
 
         (internal_links if urlparse(href).netloc == domain else external_links).append(href)
 
-        if any(kw in text for kw in ["call", "shop", "buy", "book", "contact", "visit"]):
+        if any(kw in text for kw in ["call", "shop", "buy", "book", "contact", "visit", "cart", "checkout"]):
             cta_links.append(href)
 
     schema = [
@@ -187,9 +242,9 @@ def scrape_page(url: str) -> dict:
 
     return {
         "url": url,
-        "title": soup.title.string.strip() if soup.title and soup.title.string else "",
+        "title": title,
         "h1": [h.get_text(strip=True) for h in soup.find_all("h1")],
-        "meta_description": (soup.find("meta", {"name": "description"}) or {}).get("content"),
+        "meta_description": (soup.find("meta", {"name": "description"}) or {}).get("content", ""),
         "internal_links": internal_links,
         "external_links": external_links,
         "cta_links": cta_links,
@@ -740,35 +795,37 @@ def Domain_Page_Analysis(Domain_URL:str,Competetior_URL:list[str],flag=0)->dict:
     """   
    
     logger.info("In Page Analysis with Web Scraping \n")
-    Domain_web_Scraping=scrape_page(Domain_URL)
-    logger.info("\n This is reposne from scraping web ",Domain_web_Scraping)
+    Domain_web_Scraping = scrape_page(Domain_URL)
+    logger.info(f"\n This is response from scraping web: {Domain_web_Scraping}")
 
     # Competitor scraping logic added here
     competitor_data = []
     if Competetior_URL:
-        logger.info("\n🔎 Scraping Competitor Pages...")
+        logger.info("\nScraping Competitor Pages...")
         for comp_url in Competetior_URL:
             if comp_url: # check for empty strings
                 comp_data = scrape_page(comp_url)
-                competitor_data.append(comp_data)
-        logger.info(f"\n✅ Scraped {len(competitor_data)} competitor pages.")
+                if not comp_data.get("error"):
+                     competitor_data.append(comp_data)
+        logger.info(f"\n Scraped {len(competitor_data)} competitor pages.")
+
+    if Domain_web_Scraping.get("error"):
+         return {"error": Domain_web_Scraping["error"], "competitor_data": competitor_data}
 
     if flag==1:
-        logger.info("\n This is reposne from scraping web ",Domain_web_Scraping)
-        Interlinking_Present=Domain_web_Scraping['internal_links']
+        Interlinking_Present = Domain_web_Scraping.get('internal_links', [])
         logger.info(" Getting the Links in the Sitemap \n")
-        Total_link_InDomainURL=get_sitemap_links(Domain_URL)
+        Total_link_InDomainURL = get_sitemap_links(Domain_URL)
         logger.info("The Links not present in interlinking \n")
-        Link_Not_Present=set(Total_link_InDomainURL)-set(Interlinking_Present)
-        logger.info("Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
-        # Pass competitor_data instead of just URLs
-        LLM_Analysis=analyze_with_llm(Domain_web_Scraping,Domain_URL,competitor_data) 
-        return {"page_Analysis":LLM_Analysis,"Linking_Not_Present":Link_Not_Present, "competitor_data": competitor_data}
+        Link_Not_Present = set(Total_link_InDomainURL) - set(Interlinking_Present)
+        logger.info("Now Performing LLM Analysis for For Domain URL with Competitors URL\n")
+        
+        LLM_Analysis = analyze_with_llm(Domain_web_Scraping, Domain_URL, competitor_data) 
+        return {"page_Analysis": LLM_Analysis, "Linking_Not_Present": Link_Not_Present, "competitor_data": competitor_data}
     else:
-        logger.info("Now Prefoming LLM Analysis for For Domain URL with Competetiors URL\n")
-        # Pass competitor_data instead of just URLs
-        LLM_Analysis=analyze_with_llm(Domain_web_Scraping,Domain_URL,competitor_data)
-        return {"page_Analysis":LLM_Analysis, "competitor_data": competitor_data}
+        logger.info("Now Performing LLM Analysis for For Domain URL with Competitors URL\n")
+        LLM_Analysis = analyze_with_llm(Domain_web_Scraping, Domain_URL, competitor_data)
+        return {"page_Analysis": LLM_Analysis, "competitor_data": competitor_data}
 
 def KD_for_Given_keywords(keywords:list[str],location="India"):
 
