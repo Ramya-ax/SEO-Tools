@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://148.113.16.40:3014',
         changeOrigin: true,
         timeout: 300000, // 5 minutes
         proxyTimeout: 300000, // 5 minutes

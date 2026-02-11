@@ -235,7 +235,8 @@ export const SitemapReport: React.FC = () => {
     // Fetch Logic
     const fetchChildren = async (keyword: string): Promise<KeywordSitemapItem[]> => {
         try {
-            const response = await fetch('http://localhost:8000/Keyword_sitemap', {
+            const baseUrl = import.meta.env.VITE_API_BASE_URL;
+            const response = await fetch(`${baseUrl}/Keyword_sitemap`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ Keyword: keyword }),

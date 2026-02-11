@@ -17,7 +17,7 @@ import type {
 // If backend is on 8000 and frontend on 5173, we might need full URL or proxy.
 // User instructions said "Base URL: same origin / dev tunnel"
 // We will default to relative path, assuming proxy or same origin.
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
