@@ -26,7 +26,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     <input
                         ref={ref}
                         className={`
-            w-full py-2 rounded-lg border bg-white focus:outline-none focus:ring-2 transition-all duration-200
+            w-full py-2 rounded-lg border bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all duration-200
             ${Icon ? 'pl-10 pr-4' : 'px-4'}
             ${error
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-200'

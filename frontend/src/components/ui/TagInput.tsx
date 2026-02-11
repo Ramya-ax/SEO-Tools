@@ -67,7 +67,7 @@ export const TagInput: React.FC<TagInputProps> = ({
             )}
 
             <div className={`
-        flex flex-wrap items-center gap-2 p-2 rounded-lg border bg-white focus-within:ring-2 transition-all duration-200
+        flex flex-wrap items-center gap-2 p-2 rounded-lg border bg-white text-gray-900 focus-within:ring-2 transition-all duration-200
         ${error
                     ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-200'
                     : 'border-gray-300 focus-within:border-indigo-500 focus-within:ring-indigo-200 hover:border-gray-400'
