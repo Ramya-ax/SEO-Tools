@@ -8,7 +8,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://traffic.bdcode.in',
+        changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
