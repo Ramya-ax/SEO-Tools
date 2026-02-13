@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, HelpCircle, TrendingUp, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, HelpCircle, TrendingUp, Search, ChevronDown, ChevronUp, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { ActionButton } from '../components/ui/ActionButton';
 import type { KeywordResearchResponse, EachKeywordInfo, PeopleAlsoAskItem } from '../types/index';
 
@@ -31,6 +31,58 @@ const KeywordResearchReport: React.FC = () => {
     }
 
     const { Related_Keywords, Each_keyword_info } = reportData;
+
+    // Filter & Sort State
+    const [intentFilter, setIntentFilter] = useState<string>('all');
+    const [sortConfig, setSortConfig] = useState<{ key: 'volume' | 'difficulty' | null; direction: 'asc' | 'desc' }>({
+        key: null,
+        direction: 'desc'
+    });
+
+    // Extract unique intents for filter dropdown
+    const availableIntents = React.useMemo(() => {
+        const intents = new Set(Related_Keywords.map(k => k.Intent).filter(Boolean));
+        return ['all', ...Array.from(intents)];
+    }, [Related_Keywords]);
+
+    // Process Keywords
+    const processedKeywords = React.useMemo(() => {
+        let filtered = [...Related_Keywords];
+
+        // 1. Filter by Intent
+        if (intentFilter !== 'all') {
+            filtered = filtered.filter(k => k.Intent === intentFilter);
+        }
+
+        // 2. Sort
+        if (sortConfig.key) {
+            filtered.sort((a, b) => {
+                let aValue: number = 0;
+                let bValue: number = 0;
+
+                if (sortConfig.key === 'volume') {
+                    aValue = a.Search_Volume || 0;
+                    bValue = b.Search_Volume || 0;
+                } else if (sortConfig.key === 'difficulty') {
+                    aValue = a.keyword_difficulty || 0;
+                    bValue = b.keyword_difficulty || 0;
+                }
+
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return filtered;
+    }, [Related_Keywords, intentFilter, sortConfig]);
+
+    const handleSort = (key: 'volume' | 'difficulty') => {
+        setSortConfig(current => ({
+            key,
+            direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc'
+        }));
+    };
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -76,13 +128,62 @@ const KeywordResearchReport: React.FC = () => {
                                 <thead className="bg-gray-50 sticky top-0 z-10">
                                     <tr>
                                         <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Keyword</th>
-                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Volume</th>
-                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Difficulty</th>
-                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">Intent</th>
+
+                                        {/* Sortable Volume Column */}
+                                        <th
+                                            className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group"
+                                            onClick={() => handleSort('volume')}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                Volume
+                                                <div className="flex flex-col">
+                                                    <ArrowUp size={10} className={`text-gray-400 ${sortConfig.key === 'volume' && sortConfig.direction === 'asc' ? 'text-indigo-600' : ''}`} />
+                                                    <ArrowDown size={10} className={`text-gray-400 ${sortConfig.key === 'volume' && sortConfig.direction === 'desc' ? 'text-indigo-600' : ''}`} />
+                                                </div>
+                                            </div>
+                                        </th>
+
+                                        {/* Sortable Difficulty Column */}
+                                        <th
+                                            className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors group"
+                                            onClick={() => handleSort('difficulty')}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                Difficulty
+                                                <div className="flex flex-col">
+                                                    <ArrowUp size={10} className={`text-gray-400 ${sortConfig.key === 'difficulty' && sortConfig.direction === 'asc' ? 'text-indigo-600' : ''}`} />
+                                                    <ArrowDown size={10} className={`text-gray-400 ${sortConfig.key === 'difficulty' && sortConfig.direction === 'desc' ? 'text-indigo-600' : ''}`} />
+                                                </div>
+                                            </div>
+                                        </th>
+
+                                        {/* Filterable Intent Column */}
+                                        <th className="py-3 px-6 font-semibold text-gray-600 text-xs uppercase tracking-wider">
+                                            <div className="flex items-center gap-2">
+                                                Intent
+                                                <div className="relative inline-block">
+                                                    <select
+                                                        value={intentFilter}
+                                                        onChange={(e) => setIntentFilter(e.target.value)}
+                                                        className="appearance-none bg-white border border-gray-200 text-gray-700 py-1 pl-2 pr-6 rounded text-xs leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 cursor-pointer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {availableIntents.map(intent => (
+                                                            <option key={intent} value={intent}>
+                                                                {intent === 'all' ? 'All' : intent}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-500">
+                                                        <Filter size={10} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 text-sm">
-                                    {Related_Keywords.map((kw, i) => (
+                                    {processedKeywords.map((kw, i) => (
                                         <tr key={i} className="hover:bg-gray-50 transition-colors">
                                             <td className="py-3 px-6 font-medium text-gray-900">{kw.Keyword}</td>
                                             <td className="py-3 px-6 text-gray-600">{kw.Search_Volume?.toLocaleString() ?? '-'}</td>
