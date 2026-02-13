@@ -102,13 +102,13 @@ export const KeywordDistributionReport: React.FC = () => {
                             </div>
                             <div className="p-6">
                                 <ul className="space-y-3">
-                                    {reportData.Related_Question?.map((q, idx) => (
+                                    {(Array.isArray(reportData.Related_Question) ? reportData.Related_Question : []).map((q, idx) => (
                                         <li key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                                             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold mt-0.5">{idx + 1}</span>
                                             <span className="text-gray-700 font-medium">{q}</span>
                                         </li>
                                     ))}
-                                    {!reportData.Related_Question?.length && <p className="text-gray-500 italic">No related questions found.</p>}
+                                    {(!Array.isArray(reportData.Related_Question) || reportData.Related_Question.length === 0) && <p className="text-gray-500 italic">No related questions found.</p>}
                                 </ul>
                             </div>
                         </div>
@@ -123,12 +123,12 @@ export const KeywordDistributionReport: React.FC = () => {
                             </div>
                             <div className="p-6">
                                 <div className="flex flex-wrap gap-2">
-                                    {reportData.Related_Searchs?.map((s, idx) => (
+                                    {(Array.isArray(reportData.Related_Searchs) ? reportData.Related_Searchs : []).map((s, idx) => (
                                         <span key={idx} className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-100 hover:bg-blue-100 transition-colors cursor-default">
                                             {s}
                                         </span>
                                     ))}
-                                    {!reportData.Related_Searchs?.length && <p className="text-gray-500 italic">No related searches found.</p>}
+                                    {(!Array.isArray(reportData.Related_Searchs) || reportData.Related_Searchs.length === 0) && <p className="text-gray-500 italic">No related searches found.</p>}
                                 </div>
                             </div>
                         </div>
@@ -143,13 +143,13 @@ export const KeywordDistributionReport: React.FC = () => {
                             </div>
                         </div>
                         <div className="p-6 space-y-4">
-                            {reportData.AIMODE?.map((text, idx) => (
+                            {(Array.isArray(reportData.AIMODE) ? reportData.AIMODE : []).map((text, idx) => (
                                 <div key={idx} className="p-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-800 leading-relaxed">
                                     {/* Simple markdown-like bold parsing if needed, but for now just text */}
                                     {text.replace(/\*\*(.*?)\*\*/g, '$1')}
                                 </div>
                             ))}
-                            {!reportData.AIMODE?.length && <p className="text-gray-500 italic">No AI overview data available.</p>}
+                            {(!Array.isArray(reportData.AIMODE) || reportData.AIMODE.length === 0) && <p className="text-gray-500 italic">No AI overview data available.</p>}
                         </div>
                     </div>
 
@@ -164,7 +164,7 @@ export const KeywordDistributionReport: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {reportData.Shopping?.map((item, idx) => (
+                            {(Array.isArray(reportData.Shopping) ? reportData.Shopping : []).map((item, idx) => (
                                 <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 group">
                                     <div className="aspect-square bg-gray-100 relative overflow-hidden">
                                         {item.thumbnail ? (
@@ -197,7 +197,7 @@ export const KeywordDistributionReport: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                        {!reportData.Shopping?.length && <p className="text-gray-500 italic text-center py-8">No shopping results found.</p>}
+                        {(!Array.isArray(reportData.Shopping) || reportData.Shopping.length === 0) && <p className="text-gray-500 italic text-center py-8">No shopping results found.</p>}
                     </div>
 
                 </div>

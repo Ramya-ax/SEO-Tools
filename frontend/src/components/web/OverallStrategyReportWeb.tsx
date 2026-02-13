@@ -14,7 +14,7 @@ interface OverallStrategyReportWebProps {
  */
 // Helper to normalize "Stragery" (Roadmap) data
 const getRoadmapSteps = (strategy: any): any[] => {
-    if (!strategy) return [];
+    if (!strategy || typeof strategy !== 'object') return [];
     if (Array.isArray(strategy)) return strategy;
 
     // Handle backend object format where keys are "Step 1: Title", etc.
@@ -180,7 +180,7 @@ export const OverallStrategyReportWeb: React.FC<OverallStrategyReportWebProps> =
                                     <span className="text-xs font-medium px-2 py-1 bg-gray-200 text-gray-600 rounded-full">{cluster.tag || cluster.intent || 'General'}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {(cluster.keywords || []).map((k: string, j: number) => (
+                                    {(Array.isArray(cluster.keywords) ? cluster.keywords : []).map((k: string, j: number) => (
                                         <span key={j} className="text-sm bg-white border border-gray-200 px-3 py-1 rounded-full text-gray-700">
                                             {k}
                                         </span>
@@ -248,7 +248,7 @@ export const OverallStrategyReportWeb: React.FC<OverallStrategyReportWebProps> =
                                                                         <div className="mb-3">
                                                                             <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Keywords to Use</h5>
                                                                             <div className="flex flex-wrap gap-2">
-                                                                                {((plan.keyywords_to_use || []) as string[]).map((kw, kwIdx) => (
+                                                                                {((Array.isArray(plan.keyywords_to_use) ? plan.keyywords_to_use : []) as string[]).map((kw, kwIdx) => (
                                                                                     <span key={kwIdx} className="inline-flex items-center bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-indigo-200">
                                                                                         {kw}
                                                                                     </span>
@@ -306,7 +306,7 @@ export const OverallStrategyReportWeb: React.FC<OverallStrategyReportWebProps> =
                                         <div className="mt-4 pt-4 border-t border-gray-100">
                                             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Keyword Usage</h4>
                                             <div className="flex flex-wrap gap-2 mb-3">
-                                                {step.keywords_to_use.map((keyword: string, idx: number) => (
+                                                {(Array.isArray(step.keywords_to_use) ? step.keywords_to_use : []).map((keyword: string, idx: number) => (
                                                     <span key={idx} className="inline-flex items-center bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium border border-indigo-200">
                                                         {keyword}
                                                     </span>

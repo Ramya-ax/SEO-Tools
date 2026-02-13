@@ -198,7 +198,7 @@ export const SitemapReport: React.FC = () => {
     useEffect(() => {
         const rawState = location.state as { reportData?: KeywordSitemapItem[]; seedKeyword?: string };
 
-        if (rawState?.reportData) {
+        if (rawState?.reportData && Array.isArray(rawState.reportData)) {
             setReportData(rawState.reportData);
             setSeedKeyword(rawState.seedKeyword || 'Seed Keyword');
 
@@ -214,7 +214,7 @@ export const SitemapReport: React.FC = () => {
                     label: item.Keyword,
                     type: 'keyword' as const,
                     metrics: { sv: item.Search_Volume, kd: item.keyword_difficulty, intent: item.Intent },
-                    children: item.People_Also_Ask_For?.map((q, qIdx) => ({
+                    children: (Array.isArray(item.People_Also_Ask_For) ? item.People_Also_Ask_For : []).map((q, qIdx) => ({
                         id: `node-${idx}-paa-${qIdx}`,
                         label: q,
                         type: 'question' as const,
@@ -306,7 +306,7 @@ export const SitemapReport: React.FC = () => {
                 type: 'keyword' as const,
                 metrics: { sv: item.Search_Volume, kd: item.keyword_difficulty, intent: item.Intent },
                 children:
-                    item.People_Also_Ask_For?.map((q, qIdx) => ({
+                    (Array.isArray(item.People_Also_Ask_For) ? item.People_Also_Ask_For : []).map((q, qIdx) => ({
                         id: `${node.id}-${idx}-paa-${qIdx}`,
                         label: q,
                         type: 'question' as const,
@@ -400,7 +400,7 @@ export const SitemapReport: React.FC = () => {
                                         depth={1}
                                         initialExpanded={false}
                                     >
-                                        {item.People_Also_Ask_For?.map((paa, pIdx) => (
+                                        {Array.isArray(item.People_Also_Ask_For) && item.People_Also_Ask_For.map((paa, pIdx) => (
                                             <ListViewNode key={pIdx} label={paa} depth={2} initialExpanded={false} />
                                         ))}
                                     </ListViewNode>

@@ -124,7 +124,7 @@ export const SharedMissingKeywordsReport: React.FC = () => {
     };
 
     const handleDownloadSharedCSV = () => {
-        const csvContent = generateCSV(shared_count || []);
+        const csvContent = generateCSV(Array.isArray(shared_count) ? shared_count : []);
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -137,7 +137,7 @@ export const SharedMissingKeywordsReport: React.FC = () => {
     };
 
     const handleDownloadMissingCSV = () => {
-        const csvContent = generateCSV(missing_count || []);
+        const csvContent = generateCSV(Array.isArray(missing_count) ? missing_count : []);
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const href = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -182,14 +182,14 @@ export const SharedMissingKeywordsReport: React.FC = () => {
                     <KeywordTable
                         title="Shared Keywords"
                         description="Keywords present in both domains."
-                        data={shared_count || []}
+                        data={Array.isArray(shared_count) ? shared_count : []}
                         onDownloadCSV={handleDownloadSharedCSV}
                     />
 
                     <KeywordTable
                         title="Missing Keywords"
                         description="Keywords your competitors rank for, but you do not."
-                        data={missing_count || []}
+                        data={Array.isArray(missing_count) ? missing_count : []}
                         onDownloadCSV={handleDownloadMissingCSV}
                     />
                 </div>

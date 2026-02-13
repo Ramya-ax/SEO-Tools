@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Layout } from './components/layout/Layout';
@@ -22,7 +23,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { Login } from './pages/Login';
 
 // Auth Guard Component
-const RequireAuth = ({ children }: { children: JSX.Element }) => {
+const RequireAuth = ({ children }: { children: React.ReactElement }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const location = useLocation();
 

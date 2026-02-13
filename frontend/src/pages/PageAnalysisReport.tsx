@@ -129,7 +129,7 @@ export const PageAnalysisReport: React.FC = () => {
                             <p className="text-gray-700 leading-relaxed">{data.reasoning}</p>
                         </div>
 
-                        {('issues_found' in data && data.issues_found && data.issues_found.length > 0) && (
+                        {('issues_found' in data && Array.isArray(data.issues_found) && data.issues_found.length > 0) && (
                             <div>
                                 <h3 className="text-sm font-semibold text-red-600 uppercase tracking-wider mb-3 flex items-center">
                                     <XCircle className="w-4 h-4 mr-2" />
@@ -143,7 +143,7 @@ export const PageAnalysisReport: React.FC = () => {
                             </div>
                         )}
 
-                        {('missing_pages' in data && data.missing_pages && data.missing_pages.length > 0) && (
+                        {('missing_pages' in data && Array.isArray(data.missing_pages) && data.missing_pages.length > 0) && (
                             <div>
                                 <h3 className="text-sm font-semibold text-red-600 uppercase tracking-wider mb-3 flex items-center">
                                     <AlertTriangle className="w-4 h-4 mr-2" />
@@ -157,7 +157,7 @@ export const PageAnalysisReport: React.FC = () => {
                             </div>
                         )}
 
-                        {('gaps_identified' in data && data.gaps_identified && data.gaps_identified.length > 0) && (
+                        {('gaps_identified' in data && Array.isArray(data.gaps_identified) && data.gaps_identified.length > 0) && (
                             <div>
                                 <h3 className="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-3 flex items-center">
                                     <AlertTriangle className="w-4 h-4 mr-2" />
@@ -171,7 +171,7 @@ export const PageAnalysisReport: React.FC = () => {
                             </div>
                         )}
 
-                        {data.fix_plan && data.fix_plan.length > 0 && (
+                        {Array.isArray(data.fix_plan) && data.fix_plan.length > 0 && (
                             <div>
                                 <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 flex items-center">
                                     <CheckCircle className="w-4 h-4 mr-2" />

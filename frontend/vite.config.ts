@@ -8,10 +8,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://148.113.16.40:3014',
-        changeOrigin: true,
-        timeout: 300000, // 5 minutes
-        proxyTimeout: 300000, // 5 minutes
+        target: 'http://localhost:8000',
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }

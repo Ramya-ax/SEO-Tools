@@ -268,7 +268,7 @@ const KeywordDetails: React.FC<{ info: EachKeywordInfo }> = ({ info }) => {
                     </h3>
                 </div>
                 <div className="p-0">
-                    {info.People_Also_Ask_For.length === 0 ? (
+                    {(!Array.isArray(info.People_Also_Ask_For) || info.People_Also_Ask_For.length === 0) ? (
                         <div className="p-6 text-center text-gray-500">No PAA data found.</div>
                     ) : (
                         <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
@@ -289,7 +289,7 @@ const KeywordDetails: React.FC<{ info: EachKeywordInfo }> = ({ info }) => {
                     </h3>
                 </div>
                 <div className="p-0">
-                    {info.Long_tail_Keyword.length === 0 ? (
+                    {(!Array.isArray(info.Long_tail_Keyword) || info.Long_tail_Keyword.length === 0) ? (
                         <div className="p-6 text-center text-gray-500">No long-tail keywords found.</div>
                     ) : (
                         <div className="overflow-x-auto max-h-[500px]">

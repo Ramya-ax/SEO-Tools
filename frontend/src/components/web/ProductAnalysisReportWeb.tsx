@@ -1,6 +1,6 @@
 import React from 'react';
-import { CheckCircle, AlertTriangle, AlertCircle, Layers, Target, Trophy, TrendingUp, Info } from 'lucide-react';
-import type { ProductAnalysisResponse, PStrategiesStep } from '../../types/index';
+import { AlertTriangle, AlertCircle, Layers, Target, Trophy, TrendingUp } from 'lucide-react';
+import type { ProductAnalysisResponse } from '../../types/index';
 
 interface ProductAnalysisReportWebProps {
     data: ProductAnalysisResponse;
@@ -97,7 +97,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {data.Seed_Keyword?.map((kw, i) => (
+                                {Array.isArray(data.Seed_Keyword) && data.Seed_Keyword.map((kw, i) => (
                                     <tr key={i} className="hover:bg-gray-50 transition-colors">
                                         <td className="py-4 px-6 font-medium text-gray-900">{kw.keyword}</td>
                                         <td className="py-4 px-6">
@@ -133,7 +133,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                         <h2 className="text-2xl font-bold text-gray-900">Competitor Analysis</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {data.competetior_Analyisis?.map((comp, i) => (
+                        {(Array.isArray(data.competetior_Analyisis) ? data.competetior_Analyisis : []).map((comp, i) => (
                             <div key={i} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 truncate">
                                     <span className="text-indigo-600 font-bold mr-1">#{i + 1}</span>
@@ -154,7 +154,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                         <h2 className="text-2xl font-bold text-gray-900">Competitive Gaps</h2>
                     </div>
                     <div className="space-y-6">
-                        {data.competetor_gap?.map((gap, i) => (
+                        {(Array.isArray(data.competetor_gap) ? data.competetor_gap : []).map((gap, i) => (
                             <div key={i} className="bg-white rounded-xl border border-orange-100 shadow-sm overflow-hidden">
                                 <div className="bg-orange-50/50 p-6 border-b border-orange-100">
                                     <div className="flex items-start gap-4">
@@ -182,7 +182,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                                 <div className="p-6 bg-white">
                                     <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Fix Maps</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {gap.fix_plan?.map((fix, j) => (
+                                        {(Array.isArray(gap.fix_plan) ? gap.fix_plan : []).map((fix, j) => (
                                             <div key={j} className="border border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition-colors">
                                                 <div className="flex justify-between items-start mb-2">
                                                     <span className="font-semibold text-indigo-700 text-sm">{fix.what}</span>
@@ -209,7 +209,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                         <h2 className="text-2xl font-bold text-gray-900">Keyword Clusters</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.Keyword_Cluster?.map((cluster, i) => (
+                        {(Array.isArray(data.Keyword_Cluster) ? data.Keyword_Cluster : []).map((cluster, i) => (
                             <div key={i} className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:border-indigo-200 transition-colors">
                                 <div className="flex items-start justify-between gap-2 mb-3">
                                     <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {cluster.keywords.map((k, j) => (
+                                    {(Array.isArray(cluster.keywords) ? cluster.keywords : []).map((k, j) => (
                                         <span key={j} className="text-xs bg-white border border-gray-200 px-2 py-1 rounded text-gray-600">
                                             {k}
                                         </span>
@@ -278,7 +278,7 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
 
                                             {/* Fix Plans */}
                                             <div className="space-y-6">
-                                                {stepData.fix_plan.map((fix, k) => (
+                                                {(Array.isArray(stepData.fix_plan) && stepData.fix_plan.length > 0) ? (stepData.fix_plan.map((fix, k) => (
                                                     <div key={k} className="border border-indigo-100 rounded-xl p-5 bg-white shadow-sm ring-1 ring-indigo-50">
                                                         {/* Header: Priority & Action */}
                                                         <div className="flex flex-wrap justify-between items-start gap-4 mb-4 border-b border-gray-100 pb-4">
@@ -389,7 +389,9 @@ export const ProductAnalysisReportWeb: React.FC<ProductAnalysisReportWebProps> =
                                                             )}
                                                         </div>
                                                     </div>
-                                                ))}
+                                                ))) : (
+                                                    <div className="text-gray-500 italic p-4">No specific fix actions provided for this step.</div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

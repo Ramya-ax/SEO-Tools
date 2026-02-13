@@ -1,5 +1,13 @@
 import React from 'react';
-import type { OverallStrategyReportData } from '../../types/index';
+interface OverallStrategyReportData {
+    competitor_count: number;
+    goal: string;
+    seed_keywords: { keyword: string; search_volume: number; difficulty: number; intent: string }[];
+    competitor_analysis: { title: string; url: string; word_count: number; cta_links: number; schema_detected: boolean; h1: string[] }[];
+    gaps: { id: string; type: string; description: string; fix_plan: { priority: string; what: string; why: string; where: string; how: string } }[];
+    clusters: { name: string; intent: string; keywords: string[] }[];
+    roadmap: { step_number: number; issue: string; priority: string; evidence: string; fix_plan_bullets: string[] }[];
+}
 
 interface OverallStrategyReportPDFProps {
     data: OverallStrategyReportData;
@@ -198,7 +206,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
                         </tr>
                     </thead>
                     <tbody>
-                        {data.seed_keywords.map((kw, i) => (
+                        {(Array.isArray(data.seed_keywords) ? data.seed_keywords : []).map((kw, i) => (
                             <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
                                 <td style={tdStyle}><strong>{kw.keyword}</strong></td>
                                 <td style={tdStyle}>{kw.search_volume.toLocaleString()}</td>
@@ -215,7 +223,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
             {/* Competitor Analysis */}
             <div style={pageBreakStyle}>
                 <h2 style={h2Style}>Competitor Analysis</h2>
-                {data.competitor_analysis.map((comp, i) => (
+                {(Array.isArray(data.competitor_analysis) ? data.competitor_analysis : []).map((comp, i) => (
                     <div key={i} style={cardStyle}>
                         <h3 style={{ ...h3Style, marginTop: 0 }}>{comp.title}</h3>
                         <p style={{ color: '#3b82f6', fontSize: '8pt', marginBottom: '10px' }}>{comp.url}</p>
@@ -239,7 +247,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
 
                         <p style={{ fontWeight: 'bold', marginTop: '10px', marginBottom: '5px' }}>H1 Headings:</p>
                         <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-                            {comp.h1.map((h, k) => <li key={k} style={{ marginBottom: '3px' }}>{h}</li>)}
+                            {(Array.isArray(comp.h1) ? comp.h1 : []).map((h, k) => <li key={k} style={{ marginBottom: '3px' }}>{h}</li>)}
                         </ul>
                     </div>
                 ))}
@@ -248,7 +256,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
             {/* Gap Analysis */}
             <div style={pageBreakStyle}>
                 <h2 style={h2Style}>Gap Analysis</h2>
-                {data.gaps.map((gap) => (
+                {(Array.isArray(data.gaps) ? data.gaps : []).map((gap) => (
                     <div key={gap.id} style={warningBoxStyle}>
                         <div style={{ marginBottom: '10px' }}>
                             <strong style={{ fontSize: '12pt' }}>{gap.type} Gap</strong>
@@ -285,7 +293,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
             {/* Keyword Clusters */}
             <div style={pageBreakStyle}>
                 <h2 style={h2Style}>Keyword Clusters</h2>
-                {data.clusters.map((cluster, i) => (
+                {(Array.isArray(data.clusters) ? data.clusters : []).map((cluster, i) => (
                     <div key={i} style={{ marginBottom: '15px' }}>
                         <h3 style={h3Style}>{cluster.name}</h3>
                         <p><strong>Intent:</strong> {cluster.intent}</p>
@@ -297,7 +305,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
             {/* Execution Roadmap */}
             <div style={pageBreakStyle}>
                 <h2 style={h2Style}>Execution Roadmap</h2>
-                {data.roadmap.map((step) => (
+                {(Array.isArray(data.roadmap) ? data.roadmap : []).map((step) => (
                     <div key={step.step_number} style={cardStyle}>
                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' }}>
                             <span style={{
@@ -326,7 +334,7 @@ export const OverallStrategyReportPDF: React.FC<OverallStrategyReportPDFProps> =
 
                         <p style={{ fontWeight: 'bold', marginTop: '10px', marginBottom: '5px' }}>Fix Plan:</p>
                         <ul style={{ margin: '0 0 0 20px', padding: 0 }}>
-                            {step.fix_plan_bullets.map((bullet, k) => (
+                            {(Array.isArray(step.fix_plan_bullets) ? step.fix_plan_bullets : []).map((bullet, k) => (
                                 <li key={k} style={{ marginBottom: '3px' }}>{bullet}</li>
                             ))}
                         </ul>
