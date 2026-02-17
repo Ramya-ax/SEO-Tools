@@ -9,6 +9,7 @@ const KeywordResearchReport: React.FC = () => {
     const location = useLocation();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const reportData = (location.state as any)?.reportData as KeywordResearchResponse | undefined;
+    console.log('KeywordResearchReport received data:', reportData);
 
     const [activeKeyword, setActiveKeyword] = useState<string | null>(
         reportData?.Each_keyword_info?.[0]?.Keyword || null
@@ -30,7 +31,8 @@ const KeywordResearchReport: React.FC = () => {
         );
     }
 
-    const { Related_Keywords, Each_keyword_info } = reportData;
+    const Related_Keywords = Array.isArray(reportData.Related_Keywords) ? reportData.Related_Keywords : [];
+    const Each_keyword_info = Array.isArray(reportData.Each_keyword_info) ? reportData.Each_keyword_info : [];
 
     // Filter & Sort State
     const [intentFilter, setIntentFilter] = useState<string>('all');
@@ -331,7 +333,8 @@ const KeywordDetails: React.FC<{ info: EachKeywordInfo }> = ({ info }) => {
 // Recursive Component for PAA
 const PAAItem: React.FC<{ item: PeopleAlsoAskItem }> = ({ item }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const hasChildren = item.People_Also_Ask_For && item.People_Also_Ask_For.length > 0;
+    const children = Array.isArray(item.People_Also_Ask_For) ? item.People_Also_Ask_For : [];
+    const hasChildren = children.length > 0;
 
     return (
         <div className="bg-white hover:bg-gray-50 transition-colors">
@@ -359,7 +362,7 @@ const PAAItem: React.FC<{ item: PeopleAlsoAskItem }> = ({ item }) => {
                 <div className="bg-gray-50 px-6 py-3 border-t border-gray-100 pl-10">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Related Questions:</p>
                     <ul className="space-y-1 list-disc pl-4 text-sm text-gray-600">
-                        {item.People_Also_Ask_For.map((q, idx) => (
+                        {children.map((q, idx) => (
                             <li key={idx}>{q}</li>
                         ))}
                     </ul>
