@@ -12,45 +12,81 @@ export const PageAnalysis: React.FC = () => {
     // Local state
     const [formData, setFormData] = useState({
         domain: '',
-        competitorUrl: ''
+        competitors: [] as string[]
     });
 
-    const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+    const [currentCompetitor, setCurrentCompetitor] = useState('');
+    const [errors, setErrors] = useState<Partial<Record<'domain' | 'competitorUrl', string>>>({});
 
     const validate = () => {
         const newErrors: typeof errors = {};
         if (!formData.domain.trim()) newErrors.domain = 'Domain URL is required';
-        if (!formData.competitorUrl.trim()) newErrors.competitorUrl = 'Competitor URL is required';
+        if (formData.competitors.length === 0 && !currentCompetitor.trim()) {
+            newErrors.competitorUrl = 'At least one competitor URL is required';
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleAddCompetitor = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentCompetitor.trim()) {
+                if (formData.competitors.includes(currentCompetitor.trim())) {
+                    // Duplicate handling if needed, currently just ignoring
+                    return;
+                }
+                setFormData(prev => ({
+                    ...prev,
+                    competitors: [...prev.competitors, currentCompetitor.trim()]
+                }));
+                setCurrentCompetitor('');
+                setErrors(prev => ({ ...prev, competitorUrl: undefined }));
+            }
+        }
+    };
+
+    const handleRemoveCompetitor = (indexToRemove: number) => {
+        setFormData(prev => ({
+            ...prev,
+            competitors: prev.competitors.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+
+        // If there's text in the input, try to add it as a competitor first
+        let finalCompetitors = [...formData.competitors];
+        if (currentCompetitor.trim()) {
+            finalCompetitors.push(currentCompetitor.trim());
+        }
+
+        if (!formData.domain.trim()) {
+            setErrors({ domain: 'Domain URL is required' });
+            return;
+        }
+        if (finalCompetitors.length === 0) {
+            setErrors({ competitorUrl: 'At least one competitor URL is required' });
+            return;
+        }
 
         setLoading(true);
         try {
             const data = await SeoApi.submitPageAnalysis({
                 Domain_Url: formData.domain,
-                Comp_Url: [formData.competitorUrl]
+                Comp_Url: finalCompetitors
             });
-
-            // The backend returns { "Page": { ... } } or we handled it in api.ts
-            // SeoApi.submitPageAnalysis returns response.data
-            // response.data from backend is { "Page": ... }
 
             if (data && data.Page) {
                 navigate('/report/page-analysis', { state: { reportData: data.Page } });
             } else {
                 console.error('Invalid response format', data);
-                // Handle error appropriately, maybe set an error state
             }
 
         } catch (error) {
             console.error('Error analyzing page:', error);
-            // Handle error state here
         } finally {
             setLoading(false);
         }
@@ -105,15 +141,36 @@ export const PageAnalysis: React.FC = () => {
                             helperText="The page URL you want to analyze."
                         />
 
-                        <Input
-                            label="Competitor URL"
-                            placeholder="https://competitor.com/page"
-                            value={formData.competitorUrl}
-                            onChange={(e) => setFormData({ ...formData, competitorUrl: e.target.value })}
-                            error={errors.competitorUrl}
-                            disabled={loading}
-                            helperText="A competing page to compare against."
-                        />
+                        <div>
+                            <Input
+                                label="Competitor URL"
+                                placeholder="https://competitor.com/page (Press Enter to add)"
+                                value={currentCompetitor}
+                                onChange={(e) => setCurrentCompetitor(e.target.value)}
+                                onKeyDown={handleAddCompetitor}
+                                error={errors.competitorUrl}
+                                disabled={loading}
+                                helperText="Press Enter to add multiple competitors."
+                            />
+
+                            {/* Competitor Chips */}
+                            {formData.competitors.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    {formData.competitors.map((url, index) => (
+                                        <div key={index} className="flex items-center bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm border border-indigo-100">
+                                            <span className="truncate max-w-[300px]">{url}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveCompetitor(index)}
+                                                className="ml-2 text-indigo-400 hover:text-indigo-600 focus:outline-none"
+                                            >
+                                                &times;
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="pt-6 border-t border-gray-100 flex justify-end">
