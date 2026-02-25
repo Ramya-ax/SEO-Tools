@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { BarChart3, LayoutDashboard, LogOut } from 'lucide-react';
+import { BarChart3, LayoutDashboard, LogOut, FolderKanban } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const activeProject = localStorage.getItem('activeProjectName');
 
     return (
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -34,13 +35,50 @@ export const Navbar: React.FC = () => {
                             >
                                 <div className="flex items-center gap-2">
                                     <LayoutDashboard size={16} />
-                                    Dashboard
+                                    Home
+                                </div>
+                            </Link>
+
+                            <Link
+                                to="/projects"
+                                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === '/projects'
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FolderKanban size={16} />
+                                    Projects
+                                </div>
+                            </Link>
+
+                            <Link
+                                to="/dashboard"
+                                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === '/dashboard'
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <BarChart3 size={16} />
+                                    SEO Dashboard
                                 </div>
                             </Link>
                         </div>
                     </div>
 
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-3">
+                        {/* Active Project Indicator */}
+                        {activeProject && (
+                            <Link
+                                to="/projects"
+                                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium hover:bg-indigo-100 transition-colors"
+                            >
+                                <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                                {activeProject}
+                            </Link>
+                        )}
+
                         <button
                             onClick={() => {
                                 localStorage.removeItem('isAuthenticated');

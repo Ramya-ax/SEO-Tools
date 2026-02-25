@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SeoApi } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Search, Loader2, FileText } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { ActionButton } from '../components/ui/ActionButton';
 
 export const PageAnalysis: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
 
     // Local state
@@ -18,6 +19,28 @@ export const PageAnalysis: React.FC = () => {
     const [currentCompetitor, setCurrentCompetitor] = useState('');
     const [errors, setErrors] = useState<Partial<Record<'domain' | 'competitorUrl', string>>>({});
 
+    // Pre-fill on re-run or when coming from an active project
+    useEffect(() => {
+        const isRerun = searchParams.get('rerun') === 'true';
+        const projectId = searchParams.get('projectId') || localStorage.getItem('activeProjectId') || '';
+
+        if (isRerun && projectId) {
+            fetch(`/api/projects/${projectId}/module-inputs/page`)
+                .then(r => r.json())
+                .then(result => {
+                    if (result.inputs && Object.keys(result.inputs).length > 0) {
+                        const inputs = result.inputs;
+                        setFormData({
+                            domain: inputs.domain || '',
+                            competitors: inputs.competitors || []
+                        });
+                    }
+                })
+                .catch(err => console.error('Failed to fetch stored inputs:', err));
+        }
+    }, [searchParams]);
+
+    /*
     const validate = () => {
         const newErrors: typeof errors = {};
         if (!formData.domain.trim()) newErrors.domain = 'Domain URL is required';
@@ -28,6 +51,7 @@ export const PageAnalysis: React.FC = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+    */
 
     const handleAddCompetitor = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -80,6 +104,25 @@ export const PageAnalysis: React.FC = () => {
             });
 
             if (data && data.Page) {
+                // Save the page analysis result + inputs to state
+                try {
+                    await fetch('/api/save-module-result', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            module: 'page',
+                            domain: formData.domain,
+                            data: data.Page,
+                            inputs: {
+                                domain: formData.domain,
+                                competitors: finalCompetitors
+                            }
+                        })
+                    });
+                } catch (saveErr) {
+                    console.error('Failed to save page analysis state:', saveErr);
+                }
+
                 navigate('/report/page-analysis', { state: { reportData: data.Page } });
             } else {
                 console.error('Invalid response format', data);

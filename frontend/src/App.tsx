@@ -1,5 +1,6 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Dashboard } from './pages/Dashboard';
 import { Home } from './pages/Home';
 import { Layout } from './components/layout/Layout';
 import { OverallStrategy } from './pages/OverallStrategy';
@@ -19,9 +20,8 @@ import { SitemapSeedKeyword } from './pages/SitemapSeedKeyword';
 import { SitemapReport } from './pages/SitemapReport';
 import { KeywordDistribution } from './pages/KeywordDistribution';
 import { KeywordDistributionReport } from './pages/KeywordDistributionReport';
-import { Navigate, useLocation } from 'react-router-dom';
 import { Login } from './pages/Login';
-
+import { Projects } from './pages/Projects';
 // Auth Guard Component
 const RequireAuth = ({ children }: { children: React.ReactElement }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -46,6 +46,8 @@ function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/projects" element={<Projects />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/overall-strategy" element={<OverallStrategy />} />
               <Route path="/report/overall-strategy" element={<OverallStrategyReport />} />
               <Route path="/product-analysis" element={<ProductAnalysis />} />

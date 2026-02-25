@@ -21,6 +21,20 @@ from bin.Keyword_Pie import serach_engine,Serach_Shopping,AI_MODE
 from logs.log import my_log
 logger=my_log()
 
+# State management integrations
+from core.state_service import (
+    update_overall_strategy,
+    update_page_analysis,
+    update_product_analysis,
+    update_gap_analysis,
+    update_keyword_data,
+    complete_action,
+    save_module_inputs,
+    get_module_inputs
+)
+from core.project_store import load_project
+from core.dashboard_service import compute_dashboard
+from core.recommendation_service import generate_module_recommendations, generate_all_recommendations
 
 Gen_client = genai.Client(api_key=os.getenv("GEMINI_APIKEY"))
 client = RestClient(os.getenv("DATAFORSEO_USERNAME"), os.getenv("DATAFORSEO_PASSWORD"))
@@ -855,6 +869,14 @@ NO EXTRA TEXT
     extracted = response.candidates[0].content.parts[0].text
     report = json.loads(extracted)
     logger.info("Report from the Overall stragery", report,"\n")
+
+    # Update persistent state
+    try:
+        domain_key = user.Domain_URL.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+        update_overall_strategy(domain_key, report)
+    except Exception as e:
+        logger.error(f"Failed to update overall strategy state: {e}")
+
     return report
 
 @app.post("/Shared_Missing_Keywords")
@@ -993,6 +1015,13 @@ async def Shared_And_Missing_Keywords(user: Shared_Missing_Keywords):
                         missing_keyword.append(row)
 
         
+
+        # Update persistent state
+        try:
+            domain_key = user.Domain_URL.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+            update_gap_analysis(domain_key, missing_keyword)
+        except Exception as e:
+            logger.error(f"Failed to update gap analysis state: {e}")
 
         return {
             "Error": False,
@@ -1358,6 +1387,16 @@ NO extra text
 
     print(response.text)
     responseg=json.loads(response.text)
+
+    # Update persistent state
+    try:
+        domain_key = user.Product_Page_URL.replace("https://", "").replace("http://", "").rstrip("/")
+        # Extract just the domain (remove path) for state key
+        domain_key = domain_key.split("/")[0]
+        update_product_analysis(domain_key, responseg)
+    except Exception as e:
+        logger.error(f"Failed to update product analysis state: {e}")
+
     return {"Report":responseg}
 
 @app.post("/Month")
@@ -1791,6 +1830,15 @@ FINAL VALIDATION RULE:
     print(response.text)
     responseg=json.loads(response.text)
     logger.info("\n Now The Respsone from the Month Wise Plan",responseg)
+
+    # Cache the strategy into the local persistent state file
+    try:
+        from core.state_service import update_overall_strategy
+        domain_key = user.Domain_URL.replace("https://", "").replace("http://", "").rstrip("/")
+        update_overall_strategy(domain_key, responseg)
+    except Exception as e:
+        logger.error(f"Failed to save overall strategy to state: {e}")
+
     return {"Report":responseg}
 
 @app.post("/Keyword")
@@ -1834,7 +1882,72 @@ async def Page(user:Page_A):
     Anlayisis=Domain_Page_Analysis(user.Domain_Url,user.Comp_Url)
     logger.info("\n Now The Result of",{Anlayisis})
 
+    # Update persistent state
+    try:
+        domain_key = user.Domain_Url.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+        logger.info(f"Page Analysis save: domain_key={domain_key}")
+        
+        # Try multiple key variations since LLM output keys can vary
+        page_data = None
+        for key in ['page_Analysis', 'page_analysis', 'Page_Analysis', 'pageAnalysis']:
+            if key in Anlayisis and Anlayisis[key]:
+                page_data = Anlayisis[key]
+                logger.info(f"Page Analysis: found data under key '{key}'")
+                break
+        
+        # Fallback: if analysis returned without the expected key but has data
+        if not page_data and Anlayisis and not Anlayisis.get('error'):
+            page_data = Anlayisis
+            logger.info("Page Analysis: using full response as page data (no 'page_Analysis' key found)")
+        
+        if page_data:
+            update_page_analysis(domain_key, page_data)
+            logger.info(f"Page Analysis state saved successfully for {domain_key}")
+        else:
+            logger.warning(f"Page Analysis: no data to save. Response keys: {list(Anlayisis.keys()) if isinstance(Anlayisis, dict) else type(Anlayisis)}")
+    except Exception as e:
+        logger.error(f"Failed to update page analysis state: {e}")
+
     return {"Page":Anlayisis['page_Analysis']}      
+
+@app.post("/save-module-result")
+async def save_module_result(request: Request):
+    """Unified endpoint to save any analysis module result and inputs from the frontend."""
+    try:
+        body = await request.json()
+        module = body.get("module", "")
+        domain_url = body.get("domain", "")
+        module_data = body.get("data", {})
+        module_input = body.get("inputs", None)
+        
+        if not module or not domain_url or not module_data:
+            return {"error": "module, domain and data are required"}
+        
+        domain_key = domain_url.replace("https://", "").replace("http://", "").rstrip("/").split("/")[0]
+        logger.info(f"save-module-result: module={module}, domain_key={domain_key}")
+        
+        if module == "strategy":
+            update_overall_strategy(domain_key, module_data)
+        elif module == "page":
+            update_page_analysis(domain_key, module_data)
+        elif module == "product":
+            update_product_analysis(domain_key, module_data)
+        elif module == "gaps":
+            update_gap_analysis(domain_key, module_data)
+        else:
+            return {"error": f"Unknown module: {module}"}
+        
+        # Store inputs for re-run prefilling
+        if module_input:
+            save_module_inputs(domain_key, module, module_input)
+            logger.info(f"save-module-result: stored inputs for {module}")
+        
+        logger.info(f"save-module-result: saved {module} successfully for {domain_key}")
+        return {"status": "ok", "module": module, "domain": domain_key}
+    except Exception as e:
+        logger.error(f"save-module-result failed: {e}")
+        return {"error": str(e)}
+
     
 @app.post("/Keyword_sitemap")
 async def Keyword_site(user:Keyword_Sitemap):
@@ -1864,14 +1977,202 @@ async def Login(user:LoginData):
     else:
         return{"Status":False,"Message":"Incorrect Username"}       
 
+@app.get("/project/{domain:path}/state")
+async def get_project_state(domain: str):
+    logger.info(f"Retrieving state for domain: {domain}")
+    try:
+        # Re-format string if it was URL encoded (e.g. from the client path)
+        domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        state = load_project(domain)
+        return {"domain": state.domain, "state": state.model_dump()}
+    except Exception as e:
+        logger.error(f"Failed to retrieve project state: {e}")
+        return {"Error": str(e)}
+
+@app.get("/project/{domain:path}/dashboard")
+async def project_dashboard(domain: str):
+    try:
+        domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        state = load_project(domain)
+
+        dashboard = compute_dashboard(state)
+
+        return dashboard
+
+    except Exception as e:
+        logger.error(f"Dashboard fetch failed: {e}")
+        return {"error": str(e)}
+
+@app.get("/project/{domain:path}/recommendations/{module}")
+async def project_recommendations(domain: str, module: str):
+    try:
+        domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        valid_modules = ["strategy", "page", "product", "keywords", "gaps"]
+        if module not in valid_modules:
+            return {"error": f"Invalid module. Must be one of: {valid_modules}"}
+
+        state = load_project(domain)
+        result = generate_module_recommendations(state, module)
+        return result
+
+    except Exception as e:
+        logger.error(f"Recommendations fetch failed: {e}")
+        return {"error": str(e)}
+
+@app.get("/project/{domain:path}/recommendations")
+async def project_all_recommendations(domain: str):
+    try:
+        domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        state = load_project(domain)
+        result = generate_all_recommendations(state)
+        return result
+    except Exception as e:
+        logger.error(f"Aggregate recommendations fetch failed: {e}")
+        return {"error": str(e)}
+
+@app.post("/project/{domain:path}/complete-action")
+async def project_complete_action(domain: str, request: Request):
+    try:
+        domain = domain.replace("https://", "").replace("http://", "").rstrip("/")
+        body = await request.json()
+        action_text = body.get("action", "")
+        if not action_text:
+            return {"error": "action text is required"}
+        result = complete_action(domain, action_text)
+        return result
+    except Exception as e:
+        logger.error(f"Complete action failed: {e}")
+        return {"error": str(e)}
 
 
-    
+# ========== PROJECT WORKSPACE ENDPOINTS ==========
+from core.workspace_store import (
+    create_workspace_project,
+    get_all_projects,
+    get_project,
+    delete_project
+)
 
+@app.post("/projects")
+async def api_create_project(request: Request):
+    try:
+        body = await request.json()
+        project_name = body.get("project_name", "")
+        domain = body.get("domain", "")
+        if not project_name or not domain:
+            return {"error": "project_name and domain are required"}
+        project = create_workspace_project(project_name, domain)
+        return project.model_dump()
+    except Exception as e:
+        logger.error(f"Create project failed: {e}")
+        return {"error": str(e)}
 
+@app.get("/projects")
+async def api_list_projects():
+    try:
+        projects = get_all_projects()
+        return [p.model_dump() for p in projects]
+    except Exception as e:
+        logger.error(f"List projects failed: {e}")
+        return {"error": str(e)}
 
+@app.get("/projects/{project_id}")
+async def api_get_project(project_id: str):
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        return project.model_dump()
+    except Exception as e:
+        logger.error(f"Get project failed: {e}")
+        return {"error": str(e)}
 
+@app.delete("/projects/{project_id}")
+async def api_delete_project(project_id: str):
+    try:
+        deleted = delete_project(project_id)
+        if not deleted:
+            return {"error": "Project not found"}
+        return {"status": "deleted", "project_id": project_id}
+    except Exception as e:
+        logger.error(f"Delete project failed: {e}")
+        return {"error": str(e)}
 
+@app.get("/projects/{project_id}/module-inputs/{module}")
+async def api_project_module_inputs(project_id: str, module: str):
+    """Fetch stored inputs for a module to prefill re-run forms."""
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        valid_modules = ["strategy", "page", "product", "keywords", "gaps"]
+        if module not in valid_modules:
+            return {"error": f"Invalid module. Must be one of: {valid_modules}"}
+        inputs = get_module_inputs(project.domain, module)
+        return {"inputs": inputs, "module": module}
+    except Exception as e:
+        logger.error(f"Module inputs fetch failed: {e}")
+        return {"error": str(e)}
+
+@app.get("/projects/{project_id}/dashboard")
+async def api_project_dashboard(project_id: str):
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        state = load_project(project.domain)
+        dashboard = compute_dashboard(state)
+        dashboard["project_name"] = project.project_name
+        dashboard["domain"] = project.domain
+        return dashboard
+    except Exception as e:
+        logger.error(f"Project dashboard failed: {e}")
+        return {"error": str(e)}
+
+@app.get("/projects/{project_id}/recommendations")
+async def api_project_recommendations(project_id: str):
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        state = load_project(project.domain)
+        result = generate_all_recommendations(state)
+        return result
+    except Exception as e:
+        logger.error(f"Project recommendations failed: {e}")
+        return {"error": str(e)}
+
+@app.get("/projects/{project_id}/recommendations/{module}")
+async def api_project_module_recommendations(project_id: str, module: str):
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        valid_modules = ["strategy", "page", "product", "keywords", "gaps"]
+        if module not in valid_modules:
+            return {"error": f"Invalid module. Must be one of: {valid_modules}"}
+        state = load_project(project.domain)
+        result = generate_module_recommendations(state, module)
+        return result
+    except Exception as e:
+        logger.error(f"Project module recommendations failed: {e}")
+        return {"error": str(e)}
+
+@app.post("/projects/{project_id}/complete-action")
+async def api_project_complete_action(project_id: str, request: Request):
+    try:
+        project = get_project(project_id)
+        if not project:
+            return {"error": "Project not found"}
+        body = await request.json()
+        action_text = body.get("action", "")
+        if not action_text:
+            return {"error": "action text is required"}
+        result = complete_action(project.domain, action_text)
+        return result
+    except Exception as e:
+        logger.error(f"Project complete action failed: {e}")
+        return {"error": str(e)}
 
 
 

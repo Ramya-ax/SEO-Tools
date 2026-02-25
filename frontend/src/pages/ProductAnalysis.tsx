@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Info } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { TextArea } from '../components/ui/TextArea';
@@ -10,6 +10,7 @@ import type { ProductAnalysisPayload } from '../types/index';
 
 export const ProductAnalysis: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
 
     // Local state for form helper
@@ -26,6 +27,34 @@ export const ProductAnalysis: React.FC = () => {
     });
 
     const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+
+    // Pre-fill on re-run
+    useEffect(() => {
+        const isRerun = searchParams.get('rerun') === 'true';
+        const projectId = searchParams.get('projectId') || localStorage.getItem('activeProjectId') || '';
+        if (isRerun && projectId) {
+            fetch(`/api/projects/${projectId}/module-inputs/product`)
+                .then(r => r.json())
+                .then(result => {
+                    if (result.inputs && Object.keys(result.inputs).length > 0) {
+                        const inp = result.inputs;
+                        setFormData(prev => ({
+                            ...prev,
+                            domainUrl: inp.domainUrl || prev.domainUrl,
+                            productUrl: inp.productUrl || prev.productUrl,
+                            competitorUrls: inp.competitorUrls || prev.competitorUrls,
+                            description: inp.description || prev.description,
+                            products: inp.products || prev.products,
+                            keywords: inp.keywords || prev.keywords,
+                            targetAudience: inp.targetAudience || prev.targetAudience,
+                            goal: inp.goal || prev.goal,
+                            previousStrategy: inp.previousStrategy || prev.previousStrategy
+                        }));
+                    }
+                })
+                .catch(err => console.error('Failed to fetch stored inputs:', err));
+        }
+    }, [searchParams]);
 
     const validate = () => {
         const newErrors: typeof errors = {};
@@ -63,6 +92,33 @@ export const ProductAnalysis: React.FC = () => {
             };
 
             const data = await SeoApi.submitProductAnalysis(payload);
+
+            // Save the product analysis result + inputs to state
+            try {
+                await fetch('/api/save-module-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        module: 'product',
+                        domain: formData.domainUrl,
+                        data: data,
+                        inputs: {
+                            domainUrl: formData.domainUrl,
+                            productUrl: formData.productUrl,
+                            competitorUrls: formData.competitorUrls,
+                            description: formData.description,
+                            products: formData.products,
+                            keywords: formData.keywords,
+                            targetAudience: formData.targetAudience,
+                            goal: formData.goal,
+                            previousStrategy: formData.previousStrategy
+                        }
+                    })
+                });
+            } catch (saveErr) {
+                console.error('Failed to save product analysis state:', saveErr);
+            }
+
             navigate('/report/product-analysis', { state: { reportData: data } });
         } catch (error) {
             console.error("Failed to generate report", error);

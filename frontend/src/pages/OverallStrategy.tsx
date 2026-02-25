@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, Info } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { TextArea } from '../components/ui/TextArea';
@@ -10,6 +10,7 @@ import type { OverallStrategyPayload } from '../types/index';
 
 export const OverallStrategy: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
 
     // We keep local state with friendly names, but map to strict payload on submit
@@ -25,6 +26,33 @@ export const OverallStrategy: React.FC = () => {
     });
 
     const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+
+    // Pre-fill on re-run
+    useEffect(() => {
+        const isRerun = searchParams.get('rerun') === 'true';
+        const projectId = searchParams.get('projectId') || localStorage.getItem('activeProjectId') || '';
+        if (isRerun && projectId) {
+            fetch(`/api/projects/${projectId}/module-inputs/strategy`)
+                .then(r => r.json())
+                .then(result => {
+                    if (result.inputs && Object.keys(result.inputs).length > 0) {
+                        const inp = result.inputs;
+                        setFormData(prev => ({
+                            ...prev,
+                            domain: inp.domain || prev.domain,
+                            competitors: inp.competitors || prev.competitors,
+                            products: inp.products || prev.products,
+                            description: inp.description || prev.description,
+                            target: inp.target || prev.target,
+                            audience: inp.audience || prev.audience,
+                            goal: inp.goal || prev.goal,
+                            currentSeoState: inp.currentSeoState || prev.currentSeoState
+                        }));
+                    }
+                })
+                .catch(err => console.error('Failed to fetch stored inputs:', err));
+        }
+    }, [searchParams]);
 
     const validate = () => {
         const newErrors: typeof errors = {};
@@ -60,6 +88,36 @@ export const OverallStrategy: React.FC = () => {
             };
 
             const data = await SeoApi.submitOverallStrategy(payload);
+
+            // Save the strategy result + inputs to state
+            try {
+                await fetch('/api/save-module-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        module: 'strategy',
+                        domain: formData.domain,
+                        data: data,
+                        inputs: {
+                            domain: formData.domain,
+                            competitors: formData.competitors,
+                            products: formData.products,
+                            description: formData.description,
+                            target: formData.target,
+                            audience: formData.audience,
+                            goal: formData.goal,
+                            currentSeoState: formData.currentSeoState
+                        }
+                    })
+                });
+            } catch (saveErr) {
+                console.error('Failed to save strategy state:', saveErr);
+            }
+
+            // Save the domain to localStorage so the Dashboard auto-loads it
+            const cleanDomain = formData.domain.replace("https://", "").replace("http://", "").replace(/\/$/, "");
+            localStorage.setItem('targetDomain', cleanDomain);
+
             navigate('/report/overall-strategy', { state: { reportData: data } });
 
         } catch (error) {
